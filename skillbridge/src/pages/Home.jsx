@@ -1,268 +1,747 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import quotes from "../data/quotes";
 
-export default function Home() {
-  const [completedActions, setCompletedActions] = useState([]);
+const jobs = [
+  {
+    company: "QuantForge",
+    logo: "Q",
+    role: "Quant Developer Intern",
+    location: "Bengaluru · Hybrid",
+    match: 94,
+    salary: "₹18–28 LPA",
+    skills: ["C++", "Probability", "Python", "DSA"],
+  },
+  {
+    company: "Vertex Labs",
+    logo: "V",
+    role: "Software Engineer Intern",
+    location: "Remote · India",
+    match: 91,
+    salary: "₹12–20 LPA",
+    skills: ["C++", "DSA", "Git", "Systems"],
+  },
+  {
+    company: "Nova Systems",
+    logo: "N",
+    role: "Backend Engineering Intern",
+    location: "Hyderabad · Hybrid",
+    match: 82,
+    salary: "₹10–16 LPA",
+    skills: ["Python", "SQL", "APIs"],
+  },
+];
 
-  const actions = [
-    {
-      id: 1,
-      title: "Complete your C++ assessment",
-      description: "Verify your C++ and problem-solving skills.",
-      tag: "HIGH IMPACT",
-      points: "+42",
-    },
-    {
-      id: 2,
-      title: "Add a GitHub project",
-      description: "Give recruiters evidence of what you can build.",
-      tag: "PROFILE",
-      points: "+28",
-    },
-    {
-      id: 3,
-      title: "Practice probability",
-      description: "Your target Quant roles require stronger probability skills.",
-      tag: "SKILL GAP",
-      points: "+19",
-    },
-  ];
+const skills = [
+  ["C++", 94, true],
+  ["DSA", 88, true],
+  ["Python", 81, false],
+  ["Probability", 63, false],
+  ["SQL", 58, false],
+];
 
-  const jobs = [
-    {
-      company: "Vertex Labs",
-      role: "Software Engineer Intern",
-      location: "Remote · India",
-      match: 94,
-      skills: ["C++", "DSA", "Git"],
-    },
-    {
-      company: "QuantForge",
-      role: "Quant Developer Intern",
-      location: "Bengaluru · Hybrid",
-      match: 88,
-      skills: ["C++", "Probability", "Python"],
-    },
-    {
-      company: "Nova Systems",
-      role: "Backend Engineering Intern",
-      location: "Hyderabad · Hybrid",
-      match: 82,
-      skills: ["Python", "SQL", "APIs"],
-    },
-  ];
+function Home() {
+    const [quoteIndex, setQuoteIndex] = useState(0);
 
-  const skills = [
-    { name: "C++", score: 94 },
-    { name: "DSA", score: 88 },
-    { name: "Python", score: 81 },
-    { name: "Probability", score: 63 },
-  ];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQuoteIndex((current) => {
+        let next = Math.floor(Math.random() * quotes.length);
 
-  const toggleAction = (id) => {
-    setCompletedActions((current) =>
-      current.includes(id)
-        ? current.filter((item) => item !== id)
-        : [...current, id]
-    );
-  };
+        // Prevent the exact same quote appearing twice
+        while (next === current && quotes.length > 1) {
+          next = Math.floor(Math.random() * quotes.length);
+        }
 
+        return next;
+      });
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []);
   return (
-    <main className="home-page">
-      <section className="hero-section">
+    <main className="dashboard">
+
+      {/* ================= HEADER ================= */}
+
+      <div className="dashboard-header">
+
         <div>
-          <p className="eyebrow">YOUR CAREER COMMAND CENTER</p>
+          <span className="eyebrow">
+            CAREER COMMAND CENTER
+          </span>
 
           <h1>
             Build proof.
-            <br />
-            <span>Not just a resume.</span>
+            <span> Get noticed.</span>
           </h1>
 
-          <p className="hero-description">
-            SkillBridge helps you turn skills, projects and performance
-            into opportunities.
+          <p>
+            Your career, skills and opportunities in one place.
           </p>
+          <div className="motivation-quote" key={quoteIndex}>
+            <span>✦</span>
+            <p>{quotes[quoteIndex]}</p>
+          </div>
         </div>
 
-        <div className="score-card">
+        <div className="header-actions">
+
+          <button className="search-button">
+            ⌕ Search anything
+            <kbd>⌘ K</kbd>
+          </button>
+
+          <button className="notification">
+            ♢
+          </button>
+
+          <button className="profile-button">
+            <span>F</span>
+            <div>
+              <strong>Furlong</strong>
+              <small>Student</small>
+            </div>
+            ▾
+          </button>
+
+        </div>
+
+      </div>
+
+
+      {/* ================= TOP STATS ================= */}
+
+      <section className="stats-row">
+
+        <div className="big-score-card">
+
           <div className="score-card-top">
             <span>SKILLBRIDGE SCORE</span>
-            <span className="verified-dot">●</span>
+            <span className="score-trend">↑ +24</span>
           </div>
 
-          <div className="score-number">742</div>
+          <div className="score-main">
+            <strong>742</strong>
 
-          <div className="score-bar">
-            <div className="score-bar-fill" />
+            <div className="score-ring">
+              <span>74%</span>
+            </div>
           </div>
 
-          <div className="score-footer">
-            <span>Top 18% of learners</span>
-            <span>+24 this month</span>
+          <div className="score-progress">
+            <div />
           </div>
+
+          <div className="score-bottom">
+            <span>TOP 18% OF LEARNERS</span>
+            <button>Improve score →</button>
+          </div>
+
         </div>
-      </section>
 
-      <section className="stats-grid">
+
         <div className="stat-card">
-          <span className="stat-label">PROFILE</span>
+
+          <span>PROFILE STRENGTH</span>
+
           <strong>72%</strong>
-          <span className="stat-subtext">3 actions remaining</span>
+
+          <div className="mini-progress">
+            <div style={{ width: "72%" }} />
+          </div>
+
+          <small>
+            3 actions remaining
+          </small>
+
+          <button>
+            Complete profile →
+          </button>
+
         </div>
 
-        <div className="stat-card">
-          <span className="stat-label">VERIFIED SKILLS</span>
-          <strong>6</strong>
-          <span className="stat-subtext">+2 this month</span>
-        </div>
 
         <div className="stat-card">
-          <span className="stat-label">JOB MATCHES</span>
+
+          <span>VERIFIED SKILLS</span>
+
+          <strong>06</strong>
+
+          <small className="positive">
+            +2 this month
+          </small>
+
+          <button>
+            View evidence →
+          </button>
+
+        </div>
+
+
+        <div className="stat-card">
+
+          <span>JOB MATCHES</span>
+
           <strong>24</strong>
-          <span className="stat-subtext">8 high match</span>
+
+          <small>
+            8 high-match opportunities
+          </small>
+
+          <button>
+            Explore jobs →
+          </button>
+
         </div>
 
+
         <div className="stat-card">
-          <span className="stat-label">PROJECTS</span>
-          <strong>4</strong>
-          <span className="stat-subtext">2 verified</span>
+
+          <span>PROJECTS</span>
+
+          <strong>04</strong>
+
+          <small>
+            2 verified projects
+          </small>
+
+          <button>
+            Manage projects →
+          </button>
+
         </div>
+
       </section>
 
-      <section className="dashboard-grid">
-        <div className="dashboard-main">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">RECOMMENDED</p>
-              <h2>Your Next Best Actions</h2>
-            </div>
 
-            <button className="text-button">View all →</button>
-          </div>
+      {/* ================= COMMAND BAR ================= */}
 
-          <div className="actions-list">
-            {actions.map((action) => {
-              const completed = completedActions.includes(action.id);
+      <section className="command-bar">
 
-              return (
-                <button
-                  key={action.id}
-                  className={`action-card ${completed ? "completed" : ""}`}
-                  onClick={() => toggleAction(action.id)}
-                >
-                  <div className="action-number">
-                    {completed ? "✓" : String(action.id).padStart(2, "0")}
-                  </div>
-
-                  <div className="action-content">
-                    <div className="action-top">
-                      <span className="action-title">{action.title}</span>
-                      <span className="action-points">{action.points}</span>
-                    </div>
-
-                    <p>{action.description}</p>
-
-                    <span className="action-tag">{action.tag}</span>
-                  </div>
-
-                  <span className="action-arrow">
-                    {completed ? "Done" : "→"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="section-heading jobs-heading">
-            <div>
-              <p className="eyebrow">AI MATCHED</p>
-              <h2>Opportunities for you</h2>
-            </div>
-
-            <button className="text-button">Explore jobs →</button>
-          </div>
-
-          <div className="jobs-list">
-            {jobs.map((job) => (
-              <article className="job-card" key={job.role}>
-                <div className="company-logo">
-                  {job.company.charAt(0)}
-                </div>
-
-                <div className="job-info">
-                  <div className="job-company">{job.company}</div>
-                  <h3>{job.role}</h3>
-                  <p>{job.location}</p>
-
-                  <div className="skill-tags">
-                    {job.skills.map((skill) => (
-                      <span key={skill}>{skill}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="job-match">
-                  <span>MATCH</span>
-                  <strong>{job.match}%</strong>
-                  <button>View →</button>
-                </div>
-              </article>
-            ))}
-          </div>
+        <div>
+          <span>QUICK ACTIONS</span>
+          <strong>What do you want to accomplish?</strong>
         </div>
 
-        <aside className="dashboard-side">
-          <div className="side-card">
-            <div className="section-heading compact">
+        <button>
+          ⌕ Find Jobs
+        </button>
+
+        <button>
+          ✓ Take Assessment
+        </button>
+
+        <button>
+          + Add Project
+        </button>
+
+        <button>
+          ✦ Ask Copilot
+        </button>
+
+      </section>
+
+
+      {/* ================= MAIN LAYOUT ================= */}
+
+      <div className="dashboard-layout">
+
+
+        {/* ================= CENTER ================= */}
+
+        <div className="dashboard-main">
+
+
+          {/* NEXT ACTIONS */}
+
+          <section className="panel">
+
+            <div className="panel-header">
+
               <div>
-                <p className="eyebrow">SKILL GRAPH</p>
-                <h2>Current skills</h2>
+                <span>RECOMMENDED</span>
+                <h2>Your Next Best Actions</h2>
               </div>
 
-              <button className="dots-button">•••</button>
+              <button>
+                View all →
+              </button>
+
             </div>
 
-            <div className="skills-list">
-              {skills.map((skill) => (
-                <div className="skill-row" key={skill.name}>
-                  <div className="skill-row-top">
-                    <span>{skill.name}</span>
-                    <strong>{skill.score}</strong>
+
+            <div className="action-list">
+
+              <div className="action-row">
+
+                <div className="action-number">
+                  01
+                </div>
+
+                <div className="action-content">
+
+                  <strong>
+                    Complete your C++ assessment
+                  </strong>
+
+                  <p>
+                    Verify your C++ and problem-solving ability.
+                  </p>
+
+                  <span>
+                    HIGH IMPACT
+                  </span>
+
+                </div>
+
+                <b>
+                  +42
+                </b>
+
+                <button>
+                  Start →
+                </button>
+
+              </div>
+
+
+              <div className="action-row">
+
+                <div className="action-number">
+                  02
+                </div>
+
+                <div className="action-content">
+
+                  <strong>
+                    Add a GitHub project
+                  </strong>
+
+                  <p>
+                    Give recruiters evidence of what you can build.
+                  </p>
+
+                  <span>
+                    PROFILE
+                  </span>
+
+                </div>
+
+                <b>
+                  +28
+                </b>
+
+                <button>
+                  Add →
+                </button>
+
+              </div>
+
+
+              <div className="action-row">
+
+                <div className="action-number">
+                  03
+                </div>
+
+                <div className="action-content">
+
+                  <strong>
+                    Practice Probability
+                  </strong>
+
+                  <p>
+                    Your Quant target has a noticeable skill gap.
+                  </p>
+
+                  <span>
+                    SKILL GAP
+                  </span>
+
+                </div>
+
+                <b>
+                  +19
+                </b>
+
+                <button>
+                  Practice →
+                </button>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* OPPORTUNITIES */}
+
+          <section className="panel">
+
+            <div className="panel-header">
+
+              <div>
+                <span>AI MATCHED</span>
+                <h2>Opportunity Radar</h2>
+              </div>
+
+              <button>
+                View all jobs →
+              </button>
+
+            </div>
+
+
+            <div className="job-table">
+
+              <div className="job-table-head">
+                <span>OPPORTUNITY</span>
+                <span>MATCH</span>
+                <span>ACTION</span>
+              </div>
+
+
+              {jobs.map((job) => (
+
+                <div className="job-row" key={job.role}>
+
+                  <div className="job-info">
+
+                    <div className="company-logo">
+                      {job.logo}
+                    </div>
+
+                    <div>
+
+                      <strong>
+                        {job.role}
+                      </strong>
+
+                      <span>
+                        {job.company}
+                      </span>
+
+                      <small>
+                        {job.location}
+                      </small>
+
+                      <div className="job-tags">
+                        {job.skills.map((skill) => (
+                          <i key={skill}>
+                            {skill}
+                          </i>
+                        ))}
+                      </div>
+
+                    </div>
+
                   </div>
 
-                  <div className="skill-track">
+
+                  <div className="match-score">
+
+                    <strong>
+                      {job.match}%
+                    </strong>
+
+                    <span>
+                      MATCH
+                    </span>
+
+                  </div>
+
+
+                  <div className="job-actions">
+
+                    <button className="apply">
+                      Apply
+                    </button>
+
+                    <button>
+                      ☆
+                    </button>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </section>
+
+        </div>
+
+
+        {/* ================= RIGHT ================= */}
+
+        <aside className="dashboard-sidebar">
+
+
+          {/* PROFILE CARD */}
+
+          <section className="side-panel profile-card">
+
+            <div className="profile-top">
+
+              <div className="profile-avatar">
+                F
+              </div>
+
+              <div>
+                <strong>
+                  Your Skill Profile
+                </strong>
+
+                <span>
+                  72% complete
+                </span>
+              </div>
+
+            </div>
+
+
+            <div className="profile-progress">
+
+              <div>
+                <span>PROFILE STRENGTH</span>
+                <strong>72%</strong>
+              </div>
+
+              <div className="mini-progress">
+                <div style={{ width: "72%" }} />
+              </div>
+
+            </div>
+
+
+            <button className="full-button">
+              Complete profile →
+            </button>
+
+          </section>
+
+
+          {/* SKILLS */}
+
+          <section className="side-panel">
+
+            <div className="side-heading">
+
+              <div>
+                <span>SKILL GRAPH</span>
+                <h3>Current Skills</h3>
+              </div>
+
+              <button>
+                •••
+              </button>
+
+            </div>
+
+
+            <div className="skill-list">
+
+              {skills.map(([name, score, verified]) => (
+
+                <div className="skill-item" key={name}>
+
+                  <div className="skill-name">
+
+                    <span>
+                      {name}
+                    </span>
+
+                    {verified && (
+                      <i>✓</i>
+                    )}
+
+                  </div>
+
+                  <strong>
+                    {score}
+                  </strong>
+
+                  <div className="skill-bar">
                     <div
-                      className="skill-fill"
-                      style={{ width: `${skill.score}%` }}
+                      style={{
+                        width: `${score}%`,
+                      }}
                     />
                   </div>
+
                 </div>
+
               ))}
+
             </div>
 
-            <button className="outline-button">
-              View complete skill profile
+
+            <button className="full-button">
+              View complete skill profile →
             </button>
-          </div>
 
-          <div className="side-card copilot-card">
-            <div className="copilot-icon">✦</div>
+          </section>
 
-            <p className="eyebrow">CAREER COPILOT</p>
 
-            <h2>You have a probability gap.</h2>
+          {/* CAREER COPILOT */}
+
+          <section className="side-panel copilot-mini">
+
+            <div className="copilot-icon">
+              ✦
+            </div>
+
+            <span>
+              AI CAREER COPILOT
+            </span>
+
+            <h3>
+              Your Probability score is 63.
+            </h3>
 
             <p>
-              Strengthening probability could increase your match
-              with quantitative roles.
+              Improve it toward 80 to unlock
+              stronger Quant matches.
             </p>
 
-            <button className="primary-button">
-              Ask Career Copilot →
+            <button>
+              Build my plan →
             </button>
-          </div>
+
+          </section>
+
+
+          {/* APPLICATIONS */}
+
+          <section className="side-panel">
+
+            <div className="side-heading">
+
+              <div>
+                <span>APPLICATIONS</span>
+                <h3>Pipeline</h3>
+              </div>
+
+              <strong>
+                24
+              </strong>
+
+            </div>
+
+
+            <div className="pipeline-mini">
+
+              <div>
+                <strong>14</strong>
+                <span>Applied</span>
+              </div>
+
+              <div>
+                <strong>6</strong>
+                <span>Review</span>
+              </div>
+
+              <div>
+                <strong>3</strong>
+                <span>Test</span>
+              </div>
+
+              <div>
+                <strong>1</strong>
+                <span>Interview</span>
+              </div>
+
+              <div>
+                <strong>0</strong>
+                <span>Offer</span>
+              </div>
+
+            </div>
+
+
+            <button className="full-button">
+              Open applications →
+            </button>
+
+          </section>
+
+
+          {/* ACTIVITY */}
+
+          <section className="side-panel">
+
+            <div className="side-heading">
+
+              <div>
+                <span>ACTIVITY</span>
+                <h3>Career Timeline</h3>
+              </div>
+
+              <button>
+                View →
+              </button>
+
+            </div>
+
+
+            <div className="timeline-item">
+              <i>✓</i>
+              <div>
+                <strong>
+                  C++ skill verified
+                </strong>
+                <span>
+                  Assessment · 94%
+                </span>
+                <small>
+                  2h ago
+                </small>
+              </div>
+            </div>
+
+
+            <div className="timeline-item">
+              <i>◆</i>
+              <div>
+                <strong>
+                  Project added
+                </strong>
+                <span>
+                  Algorithmic Trading Simulator
+                </span>
+                <small>
+                  Yesterday
+                </small>
+              </div>
+            </div>
+
+
+            <div className="timeline-item">
+              <i>↗</i>
+              <div>
+                <strong>
+                  Recruiter activity
+                </strong>
+                <span>
+                  3 companies viewed your profile
+                </span>
+                <small>
+                  2d ago
+                </small>
+              </div>
+            </div>
+
+          </section>
+
         </aside>
-      </section>
+
+      </div>
+
     </main>
   );
 }
+
+export default Home;
