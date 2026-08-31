@@ -8,20 +8,20 @@ import AssessmentsPage from "./pages/Assessments";
 import SkillProfilePage from "./pages/SkillProfile";
 import ProjectsPage from "./pages/Projects";
 import CareerCopilotPage from "./pages/CareerCopilot";
+import MessagesPage from "./pages/Messages";
+import CommunityPage from "./pages/Community";
+import LeaderboardPage from "./pages/Leaderboard";
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Active view routing state
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeTab, setActiveTab] = useState("Home");
   const [tabLoading, setTabLoading] = useState(false);
 
-  // User SkillBridge Score State (Starts at 0 for fresh accounts)
   const [skillScore, setSkillScore] = useState(0);
-
-  // Empty applications state at start (0 applications)
   const [applications, setApplications] = useState([]);
 
   const [cursor, setCursor] = useState({ x: -500, y: -500 });
@@ -61,6 +61,7 @@ function App() {
   const handleLogout = () => {
     setAuthenticated(false);
     setCurrentUser(null);
+    setShowOnboarding(false);
     setSkillScore(0);
     setApplications([]);
     setActiveTab("Home");
@@ -90,6 +91,14 @@ function App() {
     );
   };
 
+  const handleOnboardingComplete = (details) => {
+    setCurrentUser((prev) => ({
+      ...prev,
+      ...details,
+    }));
+    setShowOnboarding(false);
+  };
+
   return (
     <>
       <div className="ambient-background">
@@ -109,19 +118,30 @@ function App() {
       {/* 7-Second Intro Screen */}
       {loading && <LoadingScreen />}
 
-      {/* Neo-Brutalist Auth Screen with Handle Onboarding & Clean Login */}
+      {/* Auth Screen */}
       {!loading && !authenticated && (
         <LoginScreen
-          onLoginSuccess={(user) => {
+          onLoginSuccess={(user, isNewSignup) => {
             setCurrentUser(user);
             setSkillScore(user.initialScore || 0);
             setAuthenticated(true);
+            if (isNewSignup) {
+              setShowOnboarding(true);
+            }
           }}
         />
       )}
 
-      {/* Authenticated Dashboard */}
-      {!loading && authenticated && (
+      {/* Post-Signup Onboarding Wizard */}
+      {!loading && authenticated && showOnboarding && (
+        <OnboardingWizard
+          user={currentUser}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
+
+      {/* Authenticated Command Center */}
+      {!loading && authenticated && !showOnboarding && (
         <div className="app app-visible">
           <Navbar
             user={currentUser}
@@ -136,7 +156,6 @@ function App() {
               onTabSelect={handleNavigate}
             />
 
-            {/* Viewport Router */}
             {tabLoading ? (
               <div style={spiralStyles.container}>
                 <div style={spiralStyles.spiral} />
@@ -199,6 +218,28 @@ function App() {
                   />
                 )}
 
+                {activeTab === "Messages" && (
+                  <MessagesPage
+                    user={currentUser}
+                    onNavigate={handleNavigate}
+                  />
+                )}
+
+                {activeTab === "Community" && (
+                  <CommunityPage
+                    user={currentUser}
+                    onNavigate={handleNavigate}
+                  />
+                )}
+
+                {activeTab === "Leaderboard" && (
+                  <LeaderboardPage
+                    user={currentUser}
+                    score={skillScore}
+                    onNavigate={handleNavigate}
+                  />
+                )}
+
                 {/* Catch-all for unbuilt routes */}
                 {activeTab !== "Home" &&
                   activeTab !== "Jobs" &&
@@ -206,7 +247,10 @@ function App() {
                   activeTab !== "Assessments" &&
                   activeTab !== "Skill Profile" &&
                   activeTab !== "Projects" &&
-                  activeTab !== "Career Copilot" && (
+                  activeTab !== "Career Copilot" &&
+                  activeTab !== "Messages" &&
+                  activeTab !== "Community" &&
+                  activeTab !== "Leaderboard" && (
                     <div style={{ padding: "40px", textAlign: "center", fontFamily: "'Space Grotesk', sans-serif" }}>
                       <h2>{activeTab} Module</h2>
                       <p style={{ color: "#64748b" }}>This section is currently being populated.</p>
@@ -221,9 +265,190 @@ function App() {
   );
 }
 
-/* =========================================================
-   FULL 7-SECOND LOADING SCREEN
-========================================================= */
+function OnboardingWizard({ user, onComplete }) {
+  const [college, setCollege] = useState("National Institute of Technology Warangal (NITW)");
+  const [branch, setBranch] = useState("Mathematics & Computing");
+  const [currentLocation, setCurrentLocation] = useState("Hanamkonda / Hyderabad, India");
+  const [workLocation, setWorkLocation] = useState("Singapore / Global Remote");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onComplete({
+      college,
+      branch,
+      currentLocation,
+      workLocation,
+    });
+  };
+
+  return (
+    <div style={wizardStyles.overlay}>
+      <div style={wizardStyles.card}>
+        <div style={wizardStyles.badgeIcon}>🎓</div>
+        <h2 style={{ margin: "4px 0 2px 0", fontSize: "22px", fontWeight: "900" }}>
+          COMPLETE YOUR ACADEMIC &amp; LOCATION PROFILE
+        </h2>
+        <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#4b5563" }}>
+          This calibrates your ATS match rates, company relocation eligibility, and Copilot advice.
+        </p>
+
+        <form onSubmit={handleSubmit} style={wizardStyles.form}>
+          <div style={wizardStyles.inputGroup}>
+            <label style={wizardStyles.label}>College / University *</label>
+            <input
+              type="text"
+              value={college}
+              onChange={(e) => setCollege(e.target.value)}
+              placeholder="e.g. NIT Warangal / IIT Guwahati / BITS Pilani"
+              style={wizardStyles.input}
+              required
+            />
+          </div>
+
+          <div style={wizardStyles.inputGroup}>
+            <label style={wizardStyles.label}>Engineering Branch / Degree Major *</label>
+            <input
+              type="text"
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              placeholder="e.g. Mathematics & Computing / Computer Science / DSAI"
+              style={wizardStyles.input}
+              required
+            />
+          </div>
+
+          <div style={wizardStyles.grid2}>
+            <div style={wizardStyles.inputGroup}>
+              <label style={wizardStyles.label}>Current City / Location *</label>
+              <input
+                type="text"
+                value={currentLocation}
+                onChange={(e) => setCurrentLocation(e.target.value)}
+                placeholder="e.g. Hyderabad / Bengaluru / Delhi"
+                style={wizardStyles.input}
+                required
+              />
+            </div>
+
+            <div style={wizardStyles.inputGroup}>
+              <label style={wizardStyles.label}>Target Work Location *</label>
+              <select
+                value={workLocation}
+                onChange={(e) => setWorkLocation(e.target.value)}
+                style={wizardStyles.select}
+              >
+                <option value="Singapore / Global Remote">Singapore (Relocation)</option>
+                <option value="London / UK">London / UK (Relocation)</option>
+                <option value="New York / US">New York / US</option>
+                <option value="Bengaluru / Hyderabad (India)">Bengaluru / Hyderabad (India)</option>
+                <option value="Gurugram / Mumbai (India)">Gurugram / Mumbai (India)</option>
+                <option value="Global Remote">Global Remote</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" style={wizardStyles.submitBtn}>
+            Enter Career OS Command Center ⚡
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+const wizardStyles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backdropFilter: "blur(8px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 9999,
+    padding: "20px",
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    border: "3px solid #000000",
+    borderRadius: "20px",
+    boxShadow: "10px 10px 0px #000000",
+    maxWidth: "540px",
+    width: "100%",
+    padding: "32px",
+    textAlign: "center",
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+  },
+  badgeIcon: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "14px",
+    background: "#ffea28",
+    border: "2px solid #000000",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "24px",
+    marginBottom: "10px",
+    boxShadow: "2px 2px 0px #000000",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    textAlign: "left",
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "10px",
+  },
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  label: {
+    fontSize: "11px",
+    fontWeight: "800",
+    color: "#111827",
+  },
+  input: {
+    backgroundColor: "#fdfbf7",
+    border: "2px solid #000000",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    fontSize: "13px",
+    fontWeight: "700",
+    outline: "none",
+  },
+  select: {
+    backgroundColor: "#fdfbf7",
+    border: "2px solid #000000",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    fontSize: "12px",
+    fontWeight: "700",
+    outline: "none",
+    cursor: "pointer",
+  },
+  submitBtn: {
+    marginTop: "8px",
+    backgroundColor: "#000000",
+    color: "#ffffff",
+    border: "2px solid #000000",
+    borderRadius: "10px",
+    padding: "13px",
+    fontSize: "13px",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "4px 4px 0px #ff3d9a",
+  },
+};
+
 function LoadingScreen() {
   const [statIndex, setStatIndex] = useState(0);
 
@@ -477,42 +702,27 @@ function LoadingScreen() {
   );
 }
 
-/* =========================================================
-   EXHAUSTIVE SWE & QUANT ROLES DATA (SEARCHABLE)
-========================================================= */
 const ALL_SWE_ROLES = [
-  // Quant & High-Frequency Trading
   { id: "qdev", title: "Quantitative Developer (C++ / HFT)", category: "Quant & HFT", targetFirms: "Jane Street, Citadel, Tower, HRT" },
   { id: "qres", title: "Quantitative Researcher / Trader", category: "Quant & HFT", targetFirms: "Optiver, Two Sigma, Jump, DE Shaw" },
   { id: "fpga", title: "Low-Latency FPGA / Hardware Engineer", category: "Quant & HFT", targetFirms: "Citadel Securities, Optiver, HRT" },
   { id: "strat", title: "Quantitative Trading Strategist", category: "Quant & HFT", targetFirms: "Akuna Capital, DRW, IMC Trading" },
-
-  // Systems & Core Backend
   { id: "sys", title: "Core Distributed Systems Engineer", category: "Systems & Backend", targetFirms: "Google, Meta, Databricks, AWS" },
   { id: "backend", title: "High-Throughput Backend Engineer (Go / Java)", category: "Systems & Backend", targetFirms: "Uber, Stripe, Salesforce, Netflix" },
   { id: "os_kernel", title: "Operating Systems & Linux Kernel Engineer", category: "Systems & Backend", targetFirms: "Apple, Red Hat, Meta, Cloudflare" },
   { id: "db_eng", title: "Database & Storage Engine Engineer", category: "Systems & Backend", targetFirms: "Snowflake, MongoDB, CockroachDB" },
   { id: "compiler", title: "Compiler Engineer (LLVM / Rust)", category: "Systems & Backend", targetFirms: "Apple, NVIDIA, Google, Jane Street" },
-
-  // AI, Machine Learning & Data
   { id: "ai_infra", title: "AI / HPC Infrastructure & CUDA Engineer", category: "AI & Machine Learning", targetFirms: "NVIDIA, OpenAI, Anthropic, Meta" },
   { id: "mle", title: "Machine Learning Engineer (NLP / LLMs)", category: "AI & Machine Learning", targetFirms: "Google DeepMind, Microsoft, Apple" },
   { id: "data_eng", title: "Distributed Data & Stream Processing Engineer", category: "AI & Machine Learning", targetFirms: "Databricks, Netflix, Spotify" },
-
-  // Full-Stack, Web & Mobile
   { id: "fullstack", title: "Full-Stack Product Engineer (React / Node / Go)", category: "Web & Product", targetFirms: "Airbnb, Vercel, Linear, Stripe" },
   { id: "frontend", title: "High-Performance Frontend Systems Engineer", category: "Web & Product", targetFirms: "Figma, Vercel, Canva, Meta" },
   { id: "mobile", title: "Mobile Systems Engineer (iOS / Android / Rust)", category: "Web & Product", targetFirms: "Apple, Uber, Duolingo, WhatsApp" },
-
-  // Security, Cloud & DevOps
   { id: "devops", title: "Site Reliability & Cloud Infrastructure Engineer", category: "Cloud & DevOps", targetFirms: "AWS, Cloudflare, Google Cloud" },
   { id: "sec_eng", title: "Security Systems & Cryptography Engineer", category: "Security & Web3", targetFirms: "Ethereum Foundation, Palantir, CrowdStrike" },
   { id: "web3_core", title: "Protocol / Smart Contract Core Engineer", category: "Security & Web3", targetFirms: "Polygon, Solana, Chainlink, Coinbase" },
 ];
 
-/* =========================================================
-   NEO-BRUTALIST AUTH SCREEN (SIGNUP ASKS FOR HANDLES & TRACK)
-========================================================= */
 function LoginScreen({ onLoginSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
@@ -520,12 +730,10 @@ function LoginScreen({ onLoginSuccess }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
 
-  // Signup-only: Handles to connect
   const [cfHandleInput, setCfHandleInput] = useState("");
   const [lcHandleInput, setLcHandleInput] = useState("");
   const [ghHandleInput, setGhHandleInput] = useState("");
 
-  // Searchable Target Role State (Signup only)
   const [roleSearch, setRoleSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState(ALL_SWE_ROLES[0]);
   const [targetYear, setTargetYear] = useState("2027 (Internship)");
@@ -565,17 +773,20 @@ function LoginScreen({ onLoginSuccess }) {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      onLoginSuccess({
-        email,
-        name: isSignUp ? name : (email.includes("@") ? email.split("@")[0] : "Candidate"),
-        targetCareer: isSignUp ? selectedRole.title : "Quantitative Developer (C++ / HFT)",
-        targetYear: isSignUp ? targetYear : "2027 (Internship)",
-        cfHandle: isSignUp ? (cfHandleInput.trim() || "furlong") : "furlong",
-        leetcodeHandle: isSignUp ? (lcHandleInput.trim() || "neal_wu") : "neal_wu",
-        githubHandle: isSignUp ? (ghHandleInput.trim() || "torvalds") : "torvalds",
-        initialScore: 0, // Starts fresh at 0
-        token: "sb-auth-token-verified",
-      });
+      onLoginSuccess(
+        {
+          email,
+          name: isSignUp ? name : (email.includes("@") ? email.split("@")[0] : "Candidate"),
+          targetCareer: isSignUp ? selectedRole.title : "Quantitative Developer (C++ / HFT)",
+          targetYear: isSignUp ? targetYear : "2027 (Internship)",
+          cfHandle: isSignUp ? (cfHandleInput.trim() || "furlong") : "furlong",
+          leetcodeHandle: isSignUp ? (lcHandleInput.trim() || "neal_wu") : "neal_wu",
+          githubHandle: isSignUp ? (ghHandleInput.trim() || "torvalds") : "torvalds",
+          initialScore: 0,
+          token: "sb-auth-token-verified",
+        },
+        isSignUp
+      );
     }, 500);
   };
 
@@ -595,14 +806,13 @@ function LoginScreen({ onLoginSuccess }) {
           </div>
           <h1 style={nbStyles.title}>SKILLBRIDGE</h1>
           <p style={nbStyles.subtitle}>
-            {isSignUp ? "CREATE NEW CANDIDATE PROFILE · CONNECT HANDLES" : "CAREER OS · ENTER COMMAND CENTER"}
+            {isSignUp ? "CREATE CANDIDATE ACCOUNT · CONNECT PROFILES" : "CAREER OS · ENTER COMMAND CENTER"}
           </p>
         </div>
 
         {error && <div style={nbStyles.errorBox}>{error}</div>}
 
         <form onSubmit={handleSubmit} style={nbStyles.form}>
-          {/* SIGNUP ONLY FIELDS */}
           {isSignUp && (
             <>
               <div style={nbStyles.inputGroup}>
@@ -617,13 +827,11 @@ function LoginScreen({ onLoginSuccess }) {
                 />
               </div>
 
-              {/* SEARCHABLE SWE / QUANT CAREER ROLE PICKER */}
               <div style={nbStyles.inputGroup}>
                 <label style={nbStyles.label}>
                   🎯 Target SWE / Quant Track ({ALL_SWE_ROLES.length} Specializations) *
                 </label>
 
-                {/* Selected Role Display Card */}
                 <div
                   onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
                   style={nbStyles.selectedRolePill}
@@ -644,7 +852,6 @@ function LoginScreen({ onLoginSuccess }) {
                   </span>
                 </div>
 
-                {/* Dropdown Menu with Live Search Filter */}
                 {isRoleDropdownOpen && (
                   <div style={nbStyles.roleDropdownMenu}>
                     <input
@@ -693,10 +900,9 @@ function LoginScreen({ onLoginSuccess }) {
                 )}
               </div>
 
-              {/* ENTER PROOF-OF-WORK HANDLES AT SIGNUP */}
               <div style={nbStyles.handlesSection}>
                 <div style={{ fontSize: "11px", fontWeight: "900", color: "#000000", marginBottom: "6px" }}>
-                  🔗 CONNECT YOUR COMPETITIVE &amp; CODE PROFILES (OPTIONAL):
+                  🔗 CONNECT YOUR COMPETITIVE &amp; CODE PROFILES:
                 </div>
 
                 <div style={nbStyles.grid3}>
@@ -735,7 +941,6 @@ function LoginScreen({ onLoginSuccess }) {
                 </div>
               </div>
 
-              {/* Target Graduation / Internship Batch */}
               <div style={nbStyles.inputGroup}>
                 <label style={nbStyles.label}>Target Batch / Cycle</label>
                 <select
@@ -752,7 +957,6 @@ function LoginScreen({ onLoginSuccess }) {
             </>
           )}
 
-          {/* COMMON AUTH FIELDS */}
           <div style={nbStyles.inputGroup}>
             <label style={nbStyles.label}>College / Personal Email *</label>
             <input
@@ -794,7 +998,7 @@ function LoginScreen({ onLoginSuccess }) {
           </div>
 
           <button type="submit" style={nbStyles.submitButton} disabled={loading}>
-            {loading ? "AUTHENTICATING..." : isSignUp ? "CREATE CUSTOMIZED CAREER OS (0 PTS) 🚀" : "ENTER COMMAND CENTER ⚡"}
+            {loading ? "AUTHENTICATING..." : isSignUp ? "CONTINUE TO LOCATION & BRANCH SETUP ➔" : "ENTER COMMAND CENTER ⚡"}
           </button>
         </form>
 
@@ -826,7 +1030,6 @@ function LoginScreen({ onLoginSuccess }) {
   );
 }
 
-/* Inline Badges */
 const inlineLogoStyles = {
   introBadge: {
     width: "36px",
@@ -851,7 +1054,6 @@ const inlineLogoStyles = {
   },
 };
 
-/* Neo-Brutalist Layout Styles */
 const nbStyles = {
   viewport: {
     minHeight: "100vh",
@@ -1093,7 +1295,6 @@ const nbStyles = {
   },
 };
 
-/* Spiral Transition Styles */
 const spiralStyles = {
   container: {
     flex: 1,
