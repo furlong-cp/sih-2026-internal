@@ -1,113 +1,147 @@
-import { useEffect, useState } from "react";
+import React from "react";
 
-export default function Sidebar() {
-  const [active, setActive] = useState("Home");
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    const toggle = () => setMobileOpen((prev) => !prev);
-
-    window.addEventListener("toggle-sidebar", toggle);
-
-    return () => {
-      window.removeEventListener("toggle-sidebar", toggle);
-    };
-  }, []);
-
-  const mainItems = [
-    { name: "Home", icon: "⌂" },
-    { name: "Jobs", icon: "▣" },
-    { name: "Applications", icon: "✓" },
-    { name: "Assessments", icon: "◇" },
-    { name: "Skill Profile", icon: "◎" },
-    { name: "Projects", icon: "◆" },
-    { name: "Career Copilot", icon: "✦" },
+export default function Sidebar({ activeTab = "Home", onTabSelect }) {
+  const workspaceItems = [
+    { label: "Home", icon: "⌂" },
+    { label: "Jobs", icon: "▣" },
+    { label: "Applications", icon: "✓" },
+    { label: "Assessments", icon: "◇" },
+    { label: "Skill Profile", icon: "◎" },
+    { label: "Projects", icon: "◆" },
+    { label: "Career Copilot", icon: "✦" },
   ];
 
   const exploreItems = [
-    { name: "Messages", icon: "□" },
-    { name: "Community", icon: "◌" },
-    { name: "Leaderboard", icon: "♛" },
+    { label: "Messages", icon: "✉" },
+    { label: "Community", icon: "💬" },
+    { label: "Leaderboard", icon: "🏆" },
   ];
 
-  const handleClick = (name) => {
-    setActive(name);
-    setMobileOpen(false);
-  };
-
   return (
-    <>
-      {mobileOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <aside className={`sidebar ${mobileOpen ? "sidebar-open" : ""}`}>
-        <div className="sidebar-section">
-          <p className="sidebar-label">WORKSPACE</p>
-
-          {mainItems.map((item) => (
-            <button
-              key={item.name}
-              className={`sidebar-item ${
-                active === item.name ? "selected" : ""
-              }`}
-              onClick={() => handleClick(item.name)}
-            >
-              <span className="sidebar-icon">{item.icon}</span>
-              <span>{item.name}</span>
-            </button>
-          ))}
+    <aside className="sidebar" style={{ width: "230px", minWidth: "230px", padding: "16px 12px" }}>
+      <div style={{ marginBottom: "24px" }}>
+        <div 
+          style={{ 
+            fontSize: "11px", 
+            fontWeight: "800", 
+            letterSpacing: "1.2px", 
+            color: "#94a3b8", 
+            marginBottom: "10px",
+            paddingLeft: "10px" 
+          }}
+        >
+          WORKSPACE
         </div>
-
-        <div className="sidebar-section">
-          <p className="sidebar-label">EXPLORE</p>
-
-          {exploreItems.map((item) => (
-            <button
-              key={item.name}
-              className={`sidebar-item ${
-                active === item.name ? "selected" : ""
-              }`}
-              onClick={() => handleClick(item.name)}
-            >
-              <span className="sidebar-icon">{item.icon}</span>
-              <span>{item.name}</span>
-            </button>
-          ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          {workspaceItems.map((item) => {
+            const isActive = activeTab === item.label;
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => onTabSelect && onTabSelect(item.label)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  border: "none",
+                  backgroundColor: isActive ? "#000000" : "transparent",
+                  color: isActive ? "#ffffff" : "#475569",
+                  fontWeight: isActive ? "800" : "600",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.15s ease",
+                  boxShadow: isActive ? "3px 3px 0px #ff3d9a" : "none",
+                }}
+              >
+                <span style={{ fontSize: "15px" }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        <div className="sidebar-bottom">
-          <div className="skill-progress">
-            <div className="progress-header">
-              <span>Profile strength</span>
-              <strong>72%</strong>
-            </div>
-
-            <div className="progress-track">
-              <div className="progress-fill" />
-            </div>
-
-            <p>
-              Complete your profile to improve your job matches.
-            </p>
-
-            <button onClick={() => handleClick("Skill Profile")}>
-              Complete profile →
-            </button>
-          </div>
-
-          <button
-            className="sidebar-item settings-item"
-            onClick={() => handleClick("Settings")}
-          >
-            <span className="sidebar-icon">⚙</span>
-            <span>Settings</span>
-          </button>
+      <div>
+        <div 
+          style={{ 
+            fontSize: "11px", 
+            fontWeight: "800", 
+            letterSpacing: "1.2px", 
+            color: "#94a3b8", 
+            marginBottom: "10px",
+            paddingLeft: "10px" 
+          }}
+        >
+          EXPLORE
         </div>
-      </aside>
-    </>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          {exploreItems.map((item) => {
+            const isActive = activeTab === item.label;
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => onTabSelect && onTabSelect(item.label)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  border: "none",
+                  backgroundColor: isActive ? "#000000" : "transparent",
+                  color: isActive ? "#ffffff" : "#475569",
+                  fontWeight: isActive ? "800" : "600",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span style={{ fontSize: "15px" }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div 
+        style={{ 
+          marginTop: "40px", 
+          padding: "12px", 
+          backgroundColor: "#ffffff", 
+          border: "2px solid #000000",
+          borderRadius: "12px",
+          boxShadow: "3px 3px 0px #000000"
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", fontWeight: "800" }}>
+          <span>Profile strength</span>
+          <span style={{ color: "#6366f1" }}>72%</span>
+        </div>
+        <div 
+          style={{ 
+            height: "6px", 
+            backgroundColor: "#e2e8f0", 
+            borderRadius: "3px", 
+            marginTop: "6px", 
+            overflow: "hidden" 
+          }}
+        >
+          <div 
+            style={{ 
+              width: "72%", 
+              height: "100%", 
+              background: "linear-gradient(90deg, #6366f1, #ec4899)" 
+            }} 
+          />
+        </div>
+      </div>
+    </aside>
   );
 }

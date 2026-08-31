@@ -2,37 +2,124 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
+import JobsPage from "./pages/Jobs";
+import ApplicationsPage from "./pages/Applications";
+import AssessmentsPage from "./pages/Assessments";
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [cursor, setCursor] = useState({
-    x: -500,
-    y: -500,
-  });
+
+  // Active view routing state
+  const [activeTab, setActiveTab] = useState("Home");
+  const [tabLoading, setTabLoading] = useState(false);
+
+  // User SkillBridge Score State (dynamically updated by assessments)
+  const [skillScore, setSkillScore] = useState(742);
+
+  // Global shared applications state
+  const [applications, setApplications] = useState([
+    {
+      id: "APP-2026-001",
+      company: "Jane Street",
+      logoColor: "#1e3a8a",
+      initials: "JS",
+      title: "Quant Trader Intern (Summer 2027)",
+      appliedYear: "2026",
+      appliedDate: "August 28, 2026",
+      appliedTime: "10:45 AM IST",
+      targetBatch: "Class of 2027 / 2028",
+      workType: "On-site · Relocation Covered",
+      location: "Singapore / Hong Kong Hub",
+      salary: "₹32L–40L / month (Intern)",
+      salaryBreakdown: {
+        base: "₹32,00,000 / month",
+        relocation: "₹8,00,000 Housing & Flight Stipend",
+        bonus: "Discretionary PnL Pool & Full-time PPO Fast-track",
+      },
+      currentStageIndex: 1,
+      status: "OA Link Active (CoderPad)",
+      matchScore: 96,
+      companyStats: {
+        headcount: "2,500+ Global",
+        acceptanceRate: "0.8% Selection Rate",
+        hiringPace: "Avg. 14 Days to Decision",
+        primaryStack: "OCaml, Modern C++, Linux Kernel",
+      },
+      notes: "Verified Candidate Master (1942) Codeforces profile auto-attached.",
+    },
+    {
+      id: "APP-2026-002",
+      company: "Citadel Securities",
+      logoColor: "#0f172a",
+      initials: "CS",
+      title: "Low-Latency Core Engineer (HFT)",
+      appliedYear: "2026",
+      appliedDate: "August 26, 2026",
+      appliedTime: "04:15 PM IST",
+      targetBatch: "Immediate / 2027 Intern",
+      workType: "Hybrid (4 Days On-site)",
+      location: "Bengaluru · Technology Center",
+      salary: "₹1.2 Cr – 1.8 Cr CTC",
+      salaryBreakdown: {
+        base: "₹55 LPA Base",
+        relocation: "₹25 LPA Sign-on / Joining",
+        bonus: "₹50–90 LPA Discretionary Performance Pool",
+      },
+      currentStageIndex: 2,
+      status: "Round 1: Low-Latency C++ Scheduled",
+      matchScore: 94,
+      companyStats: {
+        headcount: "4,000+ Worldwide",
+        acceptanceRate: "1.2% Selection Rate",
+        hiringPace: "Avg. 21 Days Pipeline",
+        primaryStack: "C++20, DPDK, Solarflare OpenOnload, FPGA",
+      },
+      notes: "High match in C++ (94%) and Probability Systems.",
+    },
+    {
+      id: "APP-2026-003",
+      company: "Tower Research Capital",
+      logoColor: "#0284c7",
+      initials: "TRC",
+      title: "Quant Developer Intern",
+      appliedYear: "2026",
+      appliedDate: "August 24, 2026",
+      appliedTime: "02:30 PM IST",
+      targetBatch: "Summer 2027",
+      workType: "Hybrid",
+      location: "Gurugram · DLF CyberCity",
+      salary: "₹28L–36L / month (Intern)",
+      salaryBreakdown: {
+        base: "₹28,00,000 / month",
+        relocation: "₹6,00,000 Executive Housing",
+        bonus: "Alpha Sharing & Return Offer Priority",
+      },
+      currentStageIndex: 0,
+      status: "Under Review by Campus Team",
+      matchScore: 91,
+      companyStats: {
+        headcount: "1,200+ Engineers",
+        acceptanceRate: "1.5% Selection Rate",
+        hiringPace: "Avg. 18 Days Pipeline",
+        primaryStack: "Modern C++, Distributed Memory, Python",
+      },
+      notes: "Order matching engine project repository verified.",
+    },
+  ]);
+
+  const [cursor, setCursor] = useState({ x: -500, y: -500 });
 
   useEffect(() => {
     const moveCursor = (event) => {
-      setCursor({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      document.documentElement.style.setProperty(
-        "--mouse-x",
-        `${event.clientX}px`
-      );
-
-      document.documentElement.style.setProperty(
-        "--mouse-y",
-        `${event.clientY}px`
-      );
+      setCursor({ x: event.clientX, y: event.clientY });
+      document.documentElement.style.setProperty("--mouse-x", `${event.clientX}px`);
+      document.documentElement.style.setProperty("--mouse-y", `${event.clientY}px`);
     };
 
     window.addEventListener("mousemove", moveCursor);
 
-    /* 7-second Intro Sequence */
     const timer = setTimeout(() => {
       setLoading(false);
     }, 7000);
@@ -43,11 +130,51 @@ function App() {
     };
   }, []);
 
+  const handleNavigate = (tabName) => {
+    if (tabName === activeTab && !tabLoading) {
+      setTabLoading(true);
+      setTimeout(() => setTabLoading(false), 350);
+      return;
+    }
+    setTabLoading(true);
+    setTimeout(() => {
+      setActiveTab(tabName);
+      setTabLoading(false);
+    }, 400);
+  };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    setCurrentUser(null);
+    setActiveTab("Home");
+  };
+
+  const handleAdvanceStage = (appId) => {
+    const stageNames = [
+      "Application Submitted",
+      "Automated OA / CoderPad",
+      "Technical Round 1 (Low-Latency / DSA)",
+      "Technical Round 2 (System Design / Probability)",
+      "Offer Extended 🎉",
+    ];
+
+    setApplications((prev) =>
+      prev.map((app) => {
+        if (app.id === appId) {
+          const nextIdx = Math.min(app.currentStageIndex + 1, stageNames.length - 1);
+          return {
+            ...app,
+            currentStageIndex: nextIdx,
+            status: nextIdx === stageNames.length - 1 ? "Offer Extended 🎉" : `${stageNames[nextIdx]} Active`,
+          };
+        }
+        return app;
+      })
+    );
+  };
+
   return (
     <>
-      {/* =========================================
-          GLOBAL BACKGROUND
-      ========================================= */}
       <div className="ambient-background">
         <div className="noise-layer" />
         <div className="ambient-orb orb-one" />
@@ -59,32 +186,13 @@ function App() {
         <div className="ambient-shape shape-three" />
       </div>
 
-      {/* =========================================
-          MULTICOLOR CURSOR
-      ========================================= */}
-      <div
-        className="cursor-aura"
-        style={{
-          left: cursor.x,
-          top: cursor.y,
-        }}
-      />
-      <div
-        className="cursor-core"
-        style={{
-          left: cursor.x,
-          top: cursor.y,
-        }}
-      />
+      <div className="cursor-aura" style={{ left: cursor.x, top: cursor.y }} />
+      <div className="cursor-core" style={{ left: cursor.x, top: cursor.y }} />
 
-      {/* =========================================
-          INTRO SCREEN
-      ========================================= */}
+      {/* 7-Second Intro Screen */}
       {loading && <LoadingScreen />}
 
-      {/* =========================================
-          AUTH & DASHBOARD SCREENS
-      ========================================= */}
+      {/* Neo-Brutalist Login Screen */}
       {!loading && !authenticated && (
         <LoginScreen
           onLoginSuccess={(user) => {
@@ -94,12 +202,69 @@ function App() {
         />
       )}
 
+      {/* Authenticated Dashboard */}
       {!loading && authenticated && (
         <div className="app app-visible">
-          <Navbar user={currentUser} />
+          <Navbar
+            user={currentUser}
+            activeTab={activeTab}
+            onTabSelect={handleNavigate}
+            onLogout={handleLogout}
+          />
+
           <div className="app-body">
-            <Sidebar />
-            <Home user={currentUser} />
+            <Sidebar
+              activeTab={activeTab}
+              onTabSelect={handleNavigate}
+            />
+
+            {/* Viewport Router */}
+            {tabLoading ? (
+              <div style={spiralStyles.container}>
+                <div style={spiralStyles.spiral} />
+                <div style={spiralStyles.text}>Syncing Command Center...</div>
+              </div>
+            ) : (
+              <main style={{ flex: 1, width: "100%", overflowY: "auto" }}>
+                {activeTab === "Home" && (
+                  <Home user={currentUser} onNavigate={handleNavigate} />
+                )}
+
+                {activeTab === "Jobs" && (
+                  <JobsPage
+                    applications={applications}
+                    onApplicationSubmit={(newApp) => setApplications([newApp, ...applications])}
+                    onAdvanceStage={handleAdvanceStage}
+                  />
+                )}
+
+                {activeTab === "Applications" && (
+                  <ApplicationsPage
+                    applications={applications}
+                    onAdvanceStage={handleAdvanceStage}
+                    onExploreJobs={() => handleNavigate("Jobs")}
+                  />
+                )}
+
+                {activeTab === "Assessments" && (
+                  <AssessmentsPage
+                    score={skillScore}
+                    onScoreUpdate={(delta) => setSkillScore((prev) => prev + delta)}
+                  />
+                )}
+
+                {/* Catch-all for unbuilt routes */}
+                {activeTab !== "Home" &&
+                  activeTab !== "Jobs" &&
+                  activeTab !== "Applications" &&
+                  activeTab !== "Assessments" && (
+                    <div style={{ padding: "40px", textAlign: "center", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      <h2>{activeTab} Module</h2>
+                      <p style={{ color: "#64748b" }}>This section is currently being populated.</p>
+                    </div>
+                  )}
+              </main>
+            )}
           </div>
         </div>
       )}
@@ -108,7 +273,7 @@ function App() {
 }
 
 /* =========================================================
-   LOADING SCREEN (7-second Intro)
+   FULL 7-SECOND LOADING SCREEN
 ========================================================= */
 function LoadingScreen() {
   const [statIndex, setStatIndex] = useState(0);
@@ -150,7 +315,12 @@ function LoadingScreen() {
 
       <div className="intro-top-brand">
         <div className="intro-logo">
-          <img src="/logo.svg" alt="SkillBridge" />
+          <div style={inlineLogoStyles.introBadge}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M4 17L10 11L14 15L20 7" stroke="#000000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="20" cy="7" r="3" fill="#000000" />
+            </svg>
+          </div>
         </div>
         <strong>SKILLBRIDGE</strong>
         <span>CAREER OS</span>
@@ -221,6 +391,7 @@ function LoadingScreen() {
           {stats[statIndex].number}
         </div>
         <div className="main-stat-text">{stats[statIndex].text}</div>
+
         <div className="stat-avatars">
           <div>AK</div>
           <div>RS</div>
@@ -229,6 +400,7 @@ function LoadingScreen() {
           <div>VK</div>
           <span>+100K</span>
         </div>
+
         <div className="stat-progress">
           <div />
         </div>
@@ -315,7 +487,12 @@ function LoadingScreen() {
 
       <div className="loading-panel">
         <div className="panel-logo">
-          <img src="/logo.svg" alt="SkillBridge" />
+          <div style={inlineLogoStyles.panelBadge}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M4 17L10 11L14 15L20 7" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="20" cy="7" r="2.5" fill="#ffffff" />
+            </svg>
+          </div>
           <span>SkillBridge</span>
         </div>
         <div className="panel-line" />
@@ -352,7 +529,7 @@ function LoadingScreen() {
 }
 
 /* =========================================================
-   NEO-BRUTALIST PASTEL AUTHENTICATION SCREEN
+   NEO-BRUTALIST AUTH SCREEN
 ========================================================= */
 function LoginScreen({ onLoginSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -363,21 +540,6 @@ function LoginScreen({ onLoginSuccess }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const ticker = [
-    "🔥 QuantForge listed: ₹28 LPA Quant Dev Intern",
-    "🚀 2.4M+ skills verified across India & Global",
-    "💻 git commit -m 'fix: final_submission' 💀",
-    "🎯 Bro just unlocked a 94% match at Vertex Labs",
-  ];
-  const [tickerIndex, setTickerIndex] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setTickerIndex((prev) => (prev + 1) % ticker.length);
-    }, 2800);
-    return () => clearInterval(t);
-  }, [ticker.length]);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
@@ -386,19 +548,16 @@ function LoginScreen({ onLoginSuccess }) {
       setError("Please fill in all fields!");
       return;
     }
-
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }
-
     if (isSignUp && password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
     setLoading(true);
-
     setTimeout(() => {
       setLoading(false);
       onLoginSuccess({
@@ -406,70 +565,25 @@ function LoginScreen({ onLoginSuccess }) {
         name: isSignUp ? name : email.split("@")[0],
         token: "sb-auth-token-verified",
       });
-    }, 600);
+    }, 500);
   };
 
   return (
     <div style={nbStyles.viewport}>
-      {/* Background Pastel Geometric Blobs */}
       <div style={{ ...nbStyles.bgCircle, ...nbStyles.blobPink }} />
       <div style={{ ...nbStyles.bgCircle, ...nbStyles.blobPurple }} />
       <div style={{ ...nbStyles.bgCircle, ...nbStyles.blobYellow }} />
-      <div style={{ ...nbStyles.bgCircle, ...nbStyles.blobGreen }} />
-      <div style={{ ...nbStyles.bgCircle, ...nbStyles.blobCyan }} />
 
-      {/* Background Squiggles & Dot Patterns */}
-      <div style={nbStyles.squiggle1}>〰〰〰</div>
-      <div style={nbStyles.squiggle2}>〰〰</div>
-
-      {/* Decorative Stickers & Floating Cards */}
-      <div style={{ ...nbStyles.stickerCard, top: "8%", left: "5%", transform: "rotate(-4deg)" }}>
-        <img
-          src="https://images.unsplash.com/photo-1524293581917-878a6d017c71?auto=format&fit=crop&w=300&q=80"
-          alt="Sydney"
-          style={nbStyles.stickerImg}
-        />
-        <div style={nbStyles.stickerLabel}>🇦🇺 SYDNEY · Secured</div>
-      </div>
-
-      <div style={{ ...nbStyles.neoBadge, top: "12%", right: "6%", background: "#ff6ec7", transform: "rotate(3deg)" }}>
-        <span style={{ fontSize: "18px" }}>🔥</span> POV: DSA FINALLY PAID OFF 😭
-      </div>
-
-      <div style={{ ...nbStyles.stickerCard, bottom: "10%", right: "5%", transform: "rotate(4deg)" }}>
-        <img
-          src="https://images.unsplash.com/photo-1517090504586-fde19ea6066f?auto=format&fit=crop&w=300&q=80"
-          alt="Toronto"
-          style={nbStyles.stickerImg}
-        />
-        <div style={nbStyles.stickerLabel}>🇨🇦 TORONTO · Backend SWE</div>
-      </div>
-
-      <div style={{ ...nbStyles.neoBadge, bottom: "12%", left: "6%", background: "#ffea28", transform: "rotate(-3deg)" }}>
-        <span style={{ fontSize: "18px" }}>🚀</span> BRO GOT THE INTERNSHIP!
-      </div>
-
-      <div style={{ ...nbStyles.pillTag, top: "34%", left: "4%", background: "#a5f3fc" }}>
-        💻 C++
-      </div>
-      <div style={{ ...nbStyles.pillTag, bottom: "34%", right: "4%", background: "#bbf7d0" }}>
-        ☁️ REMOTE
-      </div>
-
-      {/* Main Neo-Brutalist Authentication Card */}
       <div style={nbStyles.card}>
         <div style={nbStyles.header}>
           <div style={nbStyles.topLogoWrap}>
-            <img src="/logo.svg" alt="SkillBridge" style={{ width: "32px", height: "32px" }} />
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path d="M4 17L10 11L14 15L20 7" stroke="#000000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="20" cy="7" r="3" fill="#000000" />
+            </svg>
           </div>
           <h1 style={nbStyles.title}>SKILLBRIDGE</h1>
           <p style={nbStyles.subtitle}>CAREER OS · BUILD · PROVE · CONNECT</p>
-        </div>
-
-        {/* Dynamic Activity Ticker */}
-        <div style={nbStyles.tickerBar}>
-          <span style={nbStyles.tickerDot} />
-          <span style={nbStyles.tickerText}>{ticker[tickerIndex]}</span>
         </div>
 
         {error && <div style={nbStyles.errorBox}>{error}</div>}
@@ -493,7 +607,7 @@ function LoginScreen({ onLoginSuccess }) {
             <label style={nbStyles.label}>College / Personal Email</label>
             <input
               type="email"
-              placeholder="alex@college"
+              placeholder="alex@college.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               style={nbStyles.input}
@@ -527,16 +641,8 @@ function LoginScreen({ onLoginSuccess }) {
             </div>
           )}
 
-          <button
-            type="submit"
-            style={nbStyles.submitButton}
-            disabled={loading}
-          >
-            {loading
-              ? "AUTHENTICATING..."
-              : isSignUp
-              ? "JOIN THE NETWORK 🚀"
-              : "ENTER SkillBridge ⚡"}
+          <button type="submit" style={nbStyles.submitButton} disabled={loading}>
+            {loading ? "AUTHENTICATING..." : isSignUp ? "JOIN THE NETWORK 🚀" : "ENTER COMMAND CENTER ⚡"}
           </button>
         </form>
 
@@ -556,13 +662,43 @@ function LoginScreen({ onLoginSuccess }) {
           </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spiralSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
 
-/* =========================================================
-   NEO-BRUTALIST RETRO-POP STYLES
-========================================================= */
+/* Inline Badges */
+const inlineLogoStyles = {
+  introBadge: {
+    width: "36px",
+    height: "36px",
+    borderRadius: "10px",
+    background: "#ffea28",
+    border: "2px solid #000000",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "2px 2px 0px #000000",
+  },
+  panelBadge: {
+    width: "28px",
+    height: "28px",
+    borderRadius: "8px",
+    background: "#ff3d9a",
+    border: "1.5px solid #000000",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+/* Neo-Brutalist Layout Styles */
 const nbStyles = {
   viewport: {
     minHeight: "100vh",
@@ -574,14 +710,13 @@ const nbStyles = {
     position: "relative",
     overflow: "hidden",
     padding: "24px",
-    fontFamily: "'Space Grotesk', system-ui, -apple-system, sans-serif",
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
     color: "#111827",
   },
   bgCircle: {
     position: "absolute",
     borderRadius: "50%",
     pointerEvents: "none",
-    zIndex: 1,
   },
   blobPink: {
     width: "260px",
@@ -604,40 +739,6 @@ const nbStyles = {
     bottom: "-60px",
     left: "10%",
   },
-  blobGreen: {
-    width: "240px",
-    height: "240px",
-    background: "#34d399",
-    bottom: "-60px",
-    right: "22%",
-  },
-  blobCyan: {
-    width: "260px",
-    height: "260px",
-    background: "#38bdf8",
-    bottom: "20%",
-    right: "-70px",
-  },
-  squiggle1: {
-    position: "absolute",
-    top: "14%",
-    left: "22%",
-    fontSize: "34px",
-    color: "#cbd5e1",
-    letterSpacing: "4px",
-    fontWeight: "bold",
-    pointerEvents: "none",
-  },
-  squiggle2: {
-    position: "absolute",
-    bottom: "16%",
-    right: "24%",
-    fontSize: "30px",
-    color: "#cbd5e1",
-    letterSpacing: "4px",
-    fontWeight: "bold",
-    pointerEvents: "none",
-  },
   card: {
     width: "100%",
     maxWidth: "440px",
@@ -647,7 +748,6 @@ const nbStyles = {
     padding: "36px 30px",
     boxShadow: "8px 8px 0px #000000",
     zIndex: 20,
-    position: "relative",
   },
   header: {
     textAlign: "center",
@@ -679,33 +779,6 @@ const nbStyles = {
     color: "#4b5563",
     margin: 0,
   },
-  tickerBar: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: "#f1f5f9",
-    border: "2px solid #000000",
-    boxShadow: "3px 3px 0px #000000",
-    padding: "8px 12px",
-    borderRadius: "10px",
-    fontSize: "12px",
-    fontWeight: "700",
-    color: "#000000",
-    marginBottom: "20px",
-    overflow: "hidden",
-  },
-  tickerDot: {
-    width: "8px",
-    height: "8px",
-    minWidth: "8px",
-    borderRadius: "50%",
-    backgroundColor: "#22c55e",
-    marginRight: "8px",
-  },
-  tickerText: {
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
   errorBox: {
     backgroundColor: "#fee2e2",
     border: "2px solid #ef4444",
@@ -732,7 +805,6 @@ const nbStyles = {
   label: {
     fontSize: "12px",
     fontWeight: "800",
-    letterSpacing: "0.5px",
     color: "#111827",
   },
   input: {
@@ -755,10 +827,8 @@ const nbStyles = {
     padding: "14px",
     fontSize: "14px",
     fontWeight: "900",
-    letterSpacing: "0.5px",
     cursor: "pointer",
     boxShadow: "4px 4px 0px #ff3d9a",
-    transition: "transform 0.1s ease",
   },
   footerSection: {
     marginTop: "20px",
@@ -779,57 +849,34 @@ const nbStyles = {
     cursor: "pointer",
     padding: 0,
   },
-  stickerCard: {
-    position: "absolute",
-    backgroundColor: "#ffffff",
-    border: "2.5px solid #000000",
-    borderRadius: "14px",
-    padding: "8px",
-    boxShadow: "5px 5px 0px #000000",
-    pointerEvents: "none",
-    zIndex: 5,
-    width: "140px",
-  },
-  stickerImg: {
-    width: "100%",
-    height: "90px",
-    objectFit: "cover",
-    borderRadius: "8px",
-    border: "1.5px solid #000000",
-    marginBottom: "6px",
-  },
-  stickerLabel: {
-    fontSize: "11px",
-    fontWeight: "800",
-    color: "#000000",
-    textAlign: "center",
-  },
-  neoBadge: {
-    position: "absolute",
-    border: "2.5px solid #000000",
-    boxShadow: "5px 5px 0px #000000",
-    borderRadius: "12px",
-    padding: "10px 14px",
-    fontWeight: "900",
-    fontSize: "12px",
-    color: "#000000",
+};
+
+/* Spiral Transition Styles */
+const spiralStyles = {
+  container: {
+    flex: 1,
+    minHeight: "75vh",
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    gap: "8px",
-    pointerEvents: "none",
-    zIndex: 5,
+    justifyContent: "center",
+    gap: "16px",
   },
-  pillTag: {
-    position: "absolute",
-    border: "2px solid #000000",
-    boxShadow: "3px 3px 0px #000000",
-    borderRadius: "20px",
-    padding: "6px 14px",
-    fontWeight: "800",
-    fontSize: "12px",
-    color: "#000000",
-    pointerEvents: "none",
-    zIndex: 5,
+  spiral: {
+    width: "48px",
+    height: "48px",
+    border: "4px solid rgba(0, 0, 0, 0.1)",
+    borderTop: "4px solid #ff3d9a",
+    borderRight: "4px solid #ffea28",
+    borderBottom: "4px solid #8b5cf6",
+    borderRadius: "50%",
+    animation: "spiralSpin 0.6s linear infinite",
+  },
+  text: {
+    fontSize: "14px",
+    fontWeight: "900",
+    color: "#111827",
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
   },
 };
 
