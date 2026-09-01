@@ -25,6 +25,26 @@ function App() {
   const [applications, setApplications] = useState([]);
 
   const [cursor, setCursor] = useState({ x: -500, y: -500 });
+  // Global theme — light by default
+const [darkMode, setDarkMode] = useState(() => {
+  return localStorage.getItem("skillbridge-theme") === "dark";
+});
+
+useEffect(() => {
+  const root = document.documentElement;
+
+  if (darkMode) {
+    root.setAttribute("data-theme", "dark");
+    localStorage.setItem("skillbridge-theme", "dark");
+  } else {
+    root.setAttribute("data-theme", "light");
+    localStorage.setItem("skillbridge-theme", "light");
+  }
+}, [darkMode]);
+
+const handleToggleTheme = () => {
+  setDarkMode((prev) => !prev);
+};
 
   useEffect(() => {
     const moveCursor = (event) => {
@@ -144,11 +164,13 @@ function App() {
       {!loading && authenticated && !showOnboarding && (
         <div className="app app-visible">
           <Navbar
-            user={currentUser}
-            activeTab={activeTab}
-            onTabSelect={handleNavigate}
-            onLogout={handleLogout}
-          />
+  user={currentUser}
+  activeTab={activeTab}
+  onTabSelect={handleNavigate}
+  onLogout={handleLogout}
+  darkMode={darkMode}
+  onToggleTheme={handleToggleTheme}
+/>
 
           <div className="app-body">
             <Sidebar

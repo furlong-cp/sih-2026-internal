@@ -1,478 +1,224 @@
 import React, { useState, useEffect } from "react";
-import { QUOTES } from "../data/quotes";
 
+/* ==========================================================================
+   DATA: QUOTES & 30+ TESTIMONIALS
+   ========================================================================== */
+const QUOTES = [
+  { quote: "Talk is cheap. Show me the code.", author: "Linus Torvalds", tag: "Systems" },
+  { quote: "In high-frequency trading and low-latency systems, nanoseconds are the new seconds.", author: "Jane Street Engineering", tag: "Quant Tech" },
+  { quote: "First, solve the problem. Then, write the code.", author: "John Johnson", tag: "Algorithms" },
+  { quote: "Simplicity is prerequisite for reliability.", author: "Edsger W. Dijkstra", tag: "Architecture" }
+];
+
+const TESTIMONIALS_DATA = [
+  { name: "Rohan Verma", role: "Quant Developer Intern", firm: "Jane Street", firmColor: "#1e3a8a", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80", quote: "The zero-heap C++20 telemetry proof in SkillBridge bypassed the resume black hole completely.", metrics: "120ns Tick-to-Trade" },
+  { name: "Ananya Sharma", role: "Quantitative Researcher", firm: "Citadel", firmColor: "#0f172a", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80", quote: "The stochastic PDE and probability verification modules match actual HFT interview questions.", metrics: "Stochastics 88%" },
+  { name: "Devansh Gupta", role: "Core Systems Engineer", firm: "Tower Research", firmColor: "#0284c7", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80", quote: "Syncing my Codeforces and LeetCode ratings gave me instant trust verification.", metrics: "CF 1980 · 99% Winrate" },
+  { name: "Kavya Ramesh", role: "Cloud Infra Engineer", firm: "Google", firmColor: "#ea4335", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80", quote: "My distributed Raft consensus project gave me a direct manager referral override at Google.", metrics: "Raft Consensus" },
+  { name: "Arjun Mehta", role: "High-Frequency Trader", firm: "Optiver", firmColor: "#dc2626", photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80", quote: "SkillBridge's live recruiter radar connected me directly with hiring desks in London.", metrics: "OA Bypassed" },
+  { name: "Priya Patel", role: "Low-Latency C++", firm: "HRT", firmColor: "#ea580c", photo: "https://images.unsplash.com/photo-1531123897727-8f129e1bf98a?auto=format&fit=crop&w=600&q=80", quote: "Hudson River Trading looks for obsessive optimizers. SkillBridge proved my hot loops.", metrics: "DPDK Bypass" },
+  { name: "Siddharth Rao", role: "Distributed Systems", firm: "Databricks", firmColor: "#ff3621", photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=600&q=80", quote: "Took the Apache Spark internal architecture assessment and got a direct recruiter ping.", metrics: "Spark Internals" },
+  { name: "Neha Singh", role: "Database Kernel", firm: "Snowflake", firmColor: "#2563eb", photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80", quote: "Snowflake’s vectorization interview is brutal. I practiced in the War Room until confident.", metrics: "SIMD AVX-512" },
+  { name: "Wei Chen", role: "FPGA Hardware", firm: "Jump Trading", firmColor: "#0f766e", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80", quote: "Integrating my Verilog hardware benchmarks directly into SkillBridge got Jump's attention.", metrics: "Verilog · PCIe" },
+  { name: "Aisha Khan", role: "AI Infrastructure", firm: "NVIDIA", firmColor: "#76b900", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80", quote: "Wrote a custom CUDA kernel that outperformed cuBLAS by 2%. Natively verified.", metrics: "CUDA C++" },
+  { name: "Liam O'Connor", role: "Alpha Researcher", firm: "Two Sigma", firmColor: "#334155", photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80", quote: "Competitive programming verification proves algorithmic velocity. Skipped HackerRank.", metrics: "CF Grandmaster" },
+  { name: "Zara Ibrahim", role: "Options Pricing Quant", firm: "DRW", firmColor: "#0369a1", photo: "https://images.unsplash.com/photo-1524504388266-9c4c5f3e9c56?auto=format&fit=crop&w=600&q=80", quote: "The Black-Scholes interactive simulation mapped my math directly to an executable graph.", metrics: "Stochastics 92%" },
+  { name: "David Kim", role: "Order Routing", firm: "IMC Trading", firmColor: "#1d4ed8", photo: "https://images.unsplash.com/photo-1488161628813-04466f872507?auto=format&fit=crop&w=600&q=80", quote: "SkillBridge translated my C++ systems knowledge into a universal Skill Score.", metrics: "SPSC Queues" },
+  { name: "Sofia Rossi", role: "Backend Performance", firm: "Meta", firmColor: "#0668E1", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=600&q=80", quote: "Passed the Linux IO tests and Meta's infrastructure team recruited me directly.", metrics: "io_uring · eBPF" },
+  { name: "Omar Tariq", role: "Compiler Engineer", firm: "Apple", firmColor: "#34a853", photo: "https://images.unsplash.com/photo-1504257432389-523431e11b74?auto=format&fit=crop&w=600&q=80", quote: "Zero-Knowledge attestation let me prove my compiler pass efficiency secretly.", metrics: "LLVM IR" },
+  { name: "Chloe Chen", role: "Data Infra Engineer", firm: "Confluent", firmColor: "#0284c7", photo: "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=600&q=80", quote: "Confluent requires deep Kafka internals knowledge. The targeted assessment closed my gaps.", metrics: "Event Streaming" },
+  { name: "Daniel Silva", role: "Blockchain Protocol", firm: "Paradigm", firmColor: "#4338ca", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80", quote: "Paradigm recruited me through the Blind Talent Auction using only my Rust EVM telemetry.", metrics: "Rust EVM" },
+  { name: "Fatima Noor", role: "Quantitative Analyst", firm: "DE Shaw", firmColor: "#be123c", photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80", quote: "Ranked in the Top 2% on the Global Leaderboard. DE Shaw reached out the next morning.", metrics: "Time-Series" },
+  { name: "Julian Brooks", role: "Trading Systems", firm: "Akuna Capital", firmColor: "#0f766e", photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80", quote: "Bypassed the HackerRank because of my verified C++ memory models badge.", metrics: "Memory Models" },
+  { name: "Nina Pavlovic", role: "Core Network", firm: "Cloudflare", firmColor: "#f58220", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80", quote: "Ran raw eBPF networking scripts and had SkillBridge cryptographically attest packet rates.", metrics: "XDP / eBPF" }
+];
+
+/* ==========================================================================
+   MAIN COMPONENT
+   ========================================================================== */
 export default function Home({ user, score = 0, applicationsCount = 0, onNavigate }) {
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isSuperdayModalOpen, setIsSuperdayModalOpen] = useState(false);
-  const [hoveredPoint, setHoveredPoint] = useState(null);
-
-  // Quote & Dynamic Color Cycle State
   const [quoteIdx, setQuoteIdx] = useState(0);
   const [paletteIdx, setPaletteIdx] = useState(0);
+  const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSuperdayModalOpen, setIsSuperdayModalOpen] = useState(false);
 
-  // High-visibility, stylish shifting color themes
+  // Advanced Profile State for Dynamic Scoring
+  const [profileData, setProfileData] = useState({
+    college: "NIT Warangal / IIT Guwahati",
+    tier: "Tier 1",
+    degree: "BSc Hons Data Science & AI",
+    gpa: "9.2",
+    cfHandle: "furlong",
+    githubHandle: "torvalds",
+    currentLocation: "Hyderabad, India",
+    workLocation: "Singapore / London",
+    assessmentsPassed: 0,
+    projectsVerified: 0
+  });
+
   const subtlePalettes = [
-    {
-      name: "Cyber Violet",
-      gradient: "linear-gradient(135deg, #7c3aed 0%, #ff3d9a 100%)",
-      accent: "#7c3aed",
-      secondaryAccent: "#ff3d9a",
-      glow: "rgba(124, 58, 237, 0.25)",
-      frontBg: "linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%)",
-      iconBg: "#ede9fe",
-      tagBg: "#ede9fe",
-      tagColor: "#5b21b6",
-      borderAccent: "#7c3aed"
-    },
-    {
-      name: "Electric Cyan",
-      gradient: "linear-gradient(135deg, #0284c7 0%, #0d9488 100%)",
-      accent: "#0284c7",
-      secondaryAccent: "#0d9488",
-      glow: "rgba(2, 132, 199, 0.25)",
-      frontBg: "linear-gradient(145deg, #ffffff 0%, #f0fdfa 100%)",
-      iconBg: "#e0f2fe",
-      tagBg: "#e0f2fe",
-      tagColor: "#0369a1",
-      borderAccent: "#0284c7"
-    },
-    {
-      name: "Sunset Coral",
-      gradient: "linear-gradient(135deg, #ea580c 0%, #eab308 100%)",
-      accent: "#ea580c",
-      secondaryAccent: "#eab308",
-      glow: "rgba(234, 88, 12, 0.25)",
-      frontBg: "linear-gradient(145deg, #ffffff 0%, #fffbeb 100%)",
-      iconBg: "#ffedd5",
-      tagBg: "#ffedd5",
-      tagColor: "#c2410c",
-      borderAccent: "#ea580c"
-    },
-    {
-      name: "Emerald Matrix",
-      gradient: "linear-gradient(135deg, #16a34a 0%, #059669 100%)",
-      accent: "#16a34a",
-      secondaryAccent: "#059669",
-      glow: "rgba(22, 163, 74, 0.25)",
-      frontBg: "linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%)",
-      iconBg: "#dcfce7",
-      tagBg: "#dcfce7",
-      tagColor: "#15803d",
-      borderAccent: "#16a34a"
-    },
-    {
-      name: "Rose Quartz",
-      gradient: "linear-gradient(135deg, #db2777 0%, #7c3aed 100%)",
-      accent: "#db2777",
-      secondaryAccent: "#7c3aed",
-      glow: "rgba(219, 39, 119, 0.25)",
-      frontBg: "linear-gradient(145deg, #ffffff 0%, #fdf2f8 100%)",
-      iconBg: "#fce7f3",
-      tagBg: "#fce7f3",
-      tagColor: "#be185d",
-      borderAccent: "#db2777"
-    }
+    { gradient: "linear-gradient(135deg, #7c3aed 0%, #ff3d9a 100%)", accent: "#7c3aed", glow: "rgba(124, 58, 237, 0.22)", iconBg: "#ede9fe", tagBg: "#ede9fe", tagColor: "#5b21b6" },
+    { gradient: "linear-gradient(135deg, #0284c7 0%, #0d9488 100%)", accent: "#0284c7", glow: "rgba(2, 132, 199, 0.22)", iconBg: "#e0f2fe", tagBg: "#e0f2fe", tagColor: "#0369a1" },
+    { gradient: "linear-gradient(135deg, #ea580c 0%, #eab308 100%)", accent: "#ea580c", glow: "rgba(234, 88, 12, 0.22)", iconBg: "#ffedd5", tagBg: "#ffedd5", tagColor: "#c2410c" }
   ];
 
   const currentPalette = subtlePalettes[paletteIdx];
-  const currentQuote = (QUOTES && QUOTES[quoteIdx]) || {
-    quote: "Talk is cheap. Show me the code.",
-    author: "Linus Torvalds",
-    tag: "Systems"
-  };
+  const currentQuote = QUOTES[quoteIdx] || QUOTES[0];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setQuoteIdx((prev) => (QUOTES ? (prev + 1) % QUOTES.length : 0));
+      setQuoteIdx((prev) => (prev + 1) % QUOTES.length);
       setPaletteIdx((prev) => (prev + 1) % subtlePalettes.length);
     }, 4500);
-
     return () => clearInterval(interval);
   }, []);
 
-  const [profileData, setProfileData] = useState({
-    college: user?.college || "NIT Warangal / IIT Guwahati",
-    branch: user?.branch || "Mathematics & Computing",
-    cfHandle: user?.cfHandle || "furlong",
-    githubHandle: user?.githubHandle || "torvalds",
-    currentLocation: user?.currentLocation || "Hyderabad, India",
-    workLocation: user?.workLocation || "Singapore / London"
-  });
+  // Strict Profile Strength Calculation
+  const calculateProfileStrength = () => {
+    let strength = 0;
+    if (profileData.tier === "Elite (Stanford/MIT)") strength += 15;
+    else if (profileData.tier === "Tier 1") strength += 10;
+    else if (profileData.tier === "Tier 2") strength += 5;
+    else strength += 2; 
 
-  const displayScore = score > 0 ? score : 742;
+    const gpaVal = parseFloat(profileData.gpa);
+    if (gpaVal >= 9.5) strength += 5;
+    else if (gpaVal >= 8.5) strength += 3;
+    else if (gpaVal >= 7.5) strength += 1;
 
-  // Growth Curve Vector Coordinates
+    strength += Math.min(profileData.assessmentsPassed * 8, 40); 
+    strength += Math.min(profileData.projectsVerified * 10, 40); 
+
+    return Math.min(strength, 100);
+  };
+
+  const profileStrength = calculateProfileStrength();
+  const displayScore = score > 0 ? score : 350 + (profileData.assessmentsPassed * 85) + (profileData.projectsVerified * 110);
+
   const growthCurvePoints = [
-    { label: "W1", score: 410, x: 20, y: 130 },
-    { label: "W2", score: 480, x: 80, y: 112 },
-    { label: "W3", score: 560, x: 140, y: 90 },
-    { label: "W4", score: 640, x: 200, y: 68 },
-    { label: "W5", score: 710, x: 260, y: 44 },
-    { label: "Now", score: displayScore, x: 320, y: 24 }
+    { label: "W1", score: 210, x: 20, y: 130 },
+    { label: "W2", score: 280, x: 80, y: 112 },
+    { label: "W3", score: 360, x: 140, y: 90 },
+    { label: "W4", score: 440, x: 200, y: 68 },
+    { label: "W5", score: 510, x: 260, y: 44 },
+    { label: "Now", score: displayScore > 742 ? 742 : displayScore, x: 320, y: 24 } 
   ];
-
   const polylineStr = growthCurvePoints.map((p) => `${p.x},${p.y}`).join(" ");
   const areaPolygonStr = `20,150 ${polylineStr} 320,150`;
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
     setIsProfileModalOpen(false);
-    alert("Profile credentials synchronized with recruiter fast-track pipelines!");
   };
 
   return (
-    <div style={styles.container}>
+    <div style={homeStyles.container}>
+      
       {/* 1. HERO BANNER */}
-      <div
-        style={{
-          ...styles.heroCard,
-          borderLeft: `8px solid ${currentPalette.accent}`,
-          boxShadow: `6px 6px 0px #000000, 0 12px 32px ${currentPalette.glow}`
-        }}
-      >
+      <div style={{ ...homeStyles.heroCard, borderLeft: `8px solid ${currentPalette.accent}`, boxShadow: `6px 6px 0px var(--shadow-main), 0 12px 32px ${currentPalette.glow}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "18px" }}>
           <div style={{ flex: 1, minWidth: "320px" }}>
-            <div style={styles.badgeRow}>
-              <span style={styles.sectionMiniTag}>CAREER COMMAND CENTER · PROOF-OF-WORK OS</span>
-              <span
-                style={{
-                  ...styles.dynamicTagBadge,
-                  backgroundColor: currentPalette.tagBg,
-                  color: currentPalette.tagColor,
-                  border: `1.5px solid ${currentPalette.accent}`
-                }}
-              >
+            <div style={homeStyles.badgeRow}>
+              <span style={homeStyles.sectionMiniTag}>CAREER COMMAND CENTER · PROOF-OF-WORK OS</span>
+              <span style={{ ...homeStyles.dynamicTagBadge, backgroundColor: currentPalette.tagBg, color: currentPalette.tagColor, border: `1.5px solid ${currentPalette.accent}` }}>
                 ✦ #{currentQuote.tag}
               </span>
             </div>
-
-            <h1 style={styles.mainHeading}>
-              Build proof.{" "}
-              <span
-                style={{
-                  backgroundImage: currentPalette.gradient,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  display: "inline-block",
-                  transition: "all 0.8s ease"
-                }}
-              >
-                Get noticed.
-              </span>
+            <h1 style={homeStyles.mainHeading}>
+              Build proof. <span style={{ backgroundImage: currentPalette.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Get noticed.</span>
             </h1>
-
-            <div style={styles.quoteBox}>
-              <div style={{ ...styles.quoteIcon, color: currentPalette.accent }}>“</div>
+            <div style={homeStyles.quoteBox}>
+              <div style={{ ...homeStyles.quoteIcon, color: currentPalette.accent }}>“</div>
               <div style={{ flex: 1 }}>
-                <p style={styles.quoteText}>{currentQuote.quote}</p>
-                <div style={styles.quoteAuthor}>
-                  — <strong>{currentQuote.author}</strong>
-                </div>
+                <p style={homeStyles.quoteText}>{currentQuote.quote}</p>
+                <div style={homeStyles.quoteAuthor}>— <strong>{currentQuote.author}</strong></div>
               </div>
             </div>
-
-            <p style={styles.subHeading}>
-              Target Track: <strong>{user?.targetCareer || "Quantitative Developer (C++ / HFT)"}</strong> · Candidate ID:{" "}
-              <strong style={{ color: currentPalette.accent }}>#SB-810492</strong>
+            <p style={homeStyles.subHeading}>
+              Target Track: <strong>Quantitative Developer (C++ / HFT)</strong> · Candidate ID: <strong style={{ color: currentPalette.accent }}>#SB-810492</strong>
             </p>
           </div>
 
-          <div style={styles.fastTrackStatusBadge} onClick={() => setIsSuperdayModalOpen(true)}>
+          <div style={homeStyles.fastTrackStatusBadge} onClick={() => setIsSuperdayModalOpen(true)}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "10px", fontWeight: "900", color: "#166534" }}>● FAST-TRACK CLEARANCE</span>
-              <span style={styles.superdayPill}>SUPERDAY ACTIVE ⚡</span>
+              <span style={{ fontSize: "10px", fontWeight: "900", color: "var(--green-text)" }}>● FAST-TRACK CLEARANCE</span>
+              <span style={homeStyles.superdayPill}>SUPERDAY ACTIVE ⚡</span>
             </div>
-            <div style={{ fontSize: "14px", fontWeight: "900", color: "#000000", marginTop: "4px" }}>
-              Top 4.2% · Direct OA Bypass
+            <div style={{ fontSize: "14px", fontWeight: "900", color: "var(--text-main)", marginTop: "4px" }}>
+              {profileStrength >= 80 ? "Top 4.2% · Direct OA Bypass" : "Rank too low for bypass"}
             </div>
-            <div style={{ fontSize: "10px", color: "#15803d", fontWeight: "700", marginTop: "2px" }}>
-              Click to view firm interview invitations ➔
-            </div>
+            <div style={{ fontSize: "10px", color: "var(--green-text)", fontWeight: "700", marginTop: "2px" }}>Click to view firm interview invitations ➔</div>
           </div>
         </div>
       </div>
 
-      {/* 2. FIVE IN-PLACE 3D POP FLIP METRIC CARDS */}
-      <div style={styles.metricsGrid}>
-        {/* Card 1: Skill Score */}
-        <div className="flip-card-container" style={flipStyles.container}>
-          <div className="flip-card-inner" style={flipStyles.inner}>
-            {/* FRONT COVER */}
-            <div
-              style={{
-                ...flipStyles.face,
-                ...flipStyles.front,
-                background: currentPalette.frontBg,
-                boxShadow: `3px 3px 0px ${currentPalette.accent}, 3px 3px 0px #000000`
-              }}
-            >
-              <div style={flipStyles.frontTopRow}>
-                <span style={{ ...flipStyles.frontCategoryPill, backgroundColor: currentPalette.iconBg, color: currentPalette.accent }}>
-                  INDEX
-                </span>
-                <span style={flipStyles.frontLivePulse}>● ACTIVE</span>
-              </div>
-
-              <div style={flipStyles.frontCenteredRow}>
-                <div style={{ ...flipStyles.frontIconCircle, backgroundColor: currentPalette.iconBg, borderColor: currentPalette.accent }}>
-                  🏆
+      {/* 2. 3D FLIP METRIC CARDS */}
+      <div style={homeStyles.metricsGrid}>
+        {[
+          { title: "Skill Score", icon: "🏆", tag: "INDEX", val: displayScore, sub: profileStrength >= 80 ? "Top 18%" : "Bottom 50%", nav: "Assessments" },
+          { title: "Profile Strength", icon: "👤", tag: "READINESS", val: `${profileStrength}%`, sub: `${100 - profileStrength}% gap`, nav: "Skill Profile" },
+          { title: "Verified Skills", icon: "⚡", tag: "PROOF", val: profileData.assessmentsPassed + profileData.projectsVerified, sub: "Attested", nav: "Skill Profile" },
+          { title: "Job Matches", icon: "🎯", tag: "MATCHES", val: profileStrength >= 80 ? "24" : "2", sub: profileStrength >= 80 ? "8 High Match" : "0 High Match", nav: "Jobs" },
+          { title: "Benchmarked Repos", icon: "💻", tag: "HARDWARE", val: profileData.projectsVerified, sub: "Zero-Heap", nav: "Projects" }
+        ].map((c, i) => (
+          <div className="flip-card-container" key={i} style={flipStyles.container}>
+            <div className="flip-card-inner" style={flipStyles.inner}>
+              <div style={{ ...flipStyles.face, ...flipStyles.front, background: "var(--bg-main)", boxShadow: `3px 3px 0px ${currentPalette.accent}, 3px 3px 0px var(--shadow-main)` }}>
+                <div style={flipStyles.frontTopRow}>
+                  <span style={{ ...flipStyles.frontCategoryPill, backgroundColor: currentPalette.iconBg, color: currentPalette.accent }}>{c.tag}</span>
+                  <span style={flipStyles.frontLivePulse}>● ACTIVE</span>
                 </div>
-                <h3 style={flipStyles.frontTitle}>Skill Score</h3>
+                <div style={flipStyles.frontCenteredRow}>
+                  <div style={{ ...flipStyles.frontIconCircle, backgroundColor: currentPalette.iconBg, borderColor: currentPalette.accent }}>{c.icon}</div>
+                  <h3 style={flipStyles.frontTitle}>{c.title}</h3>
+                </div>
               </div>
-            </div>
 
-            {/* BACK DETAILS (Same Exact Height, In-Place) */}
-            <div style={{ ...flipStyles.face, ...flipStyles.back }}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardLabel}>SKILL SCORE</span>
-                <span style={styles.badgeGreen}>↑ +24</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "2px 0" }}>
-                <div style={styles.bigScoreNumber}>{displayScore}</div>
-                <div style={{ ...styles.miniProgressCircle, borderColor: currentPalette.accent }}>74%</div>
-              </div>
-              <div style={styles.cardFooter}>
-                <span style={styles.subtextMuted}>TOP 18%</span>
-                <button onClick={() => onNavigate("Assessments")} style={styles.actionLinkBtn}>
-                  Improve score →
-                </button>
+              <div style={{ ...flipStyles.face, ...flipStyles.back }}>
+                <div style={homeStyles.cardHeader}>
+                  <span style={homeStyles.cardLabel}>{c.title.toUpperCase()}</span>
+                  <span style={homeStyles.badgeGreen}>Active</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={homeStyles.bigScoreNumber}>{c.val}</div>
+                </div>
+                <div style={homeStyles.cardFooter}>
+                  <span style={homeStyles.subtextMuted}>{c.sub}</span>
+                  <button onClick={() => onNavigate(c.nav)} style={homeStyles.actionLinkBtn}>Inspect →</button>
+                </div>
               </div>
             </div>
           </div>
+        ))}
+      </div>
+
+      {/* 3. QUICK ACTIONS BAR */}
+      <div style={homeStyles.quickActionsBar}>
+        <div style={homeStyles.quickActionsTitle}>
+          <span style={{ fontSize: "10px", fontWeight: "900", color: "#9ca3af" }}>COMMAND SHORTCUTS</span>
+          <div style={{ fontSize: "14px", fontWeight: "900", color: "#fff" }}>What do you want to accomplish today?</div>
         </div>
-
-        {/* Card 2: Profile Strength */}
-        <div className="flip-card-container" style={flipStyles.container}>
-          <div className="flip-card-inner" style={flipStyles.inner}>
-            {/* FRONT COVER */}
-            <div
-              style={{
-                ...flipStyles.face,
-                ...flipStyles.front,
-                background: currentPalette.frontBg,
-                boxShadow: `3px 3px 0px ${currentPalette.accent}, 3px 3px 0px #000000`
-              }}
-            >
-              <div style={flipStyles.frontTopRow}>
-                <span style={{ ...flipStyles.frontCategoryPill, backgroundColor: currentPalette.iconBg, color: currentPalette.accent }}>
-                  READINESS
-                </span>
-                <span style={flipStyles.frontLivePulse}>● 72% READY</span>
-              </div>
-
-              <div style={flipStyles.frontCenteredRow}>
-                <div style={{ ...flipStyles.frontIconCircle, backgroundColor: currentPalette.iconBg, borderColor: currentPalette.accent }}>
-                  👤
-                </div>
-                <h3 style={flipStyles.frontTitle}>Profile Strength</h3>
-              </div>
-            </div>
-
-            {/* BACK DETAILS */}
-            <div style={{ ...flipStyles.face, ...flipStyles.back }}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardLabel}>PROFILE STRENGTH</span>
-                <span style={{ fontSize: "10px", fontWeight: "900", color: currentPalette.accent }}>72%</span>
-              </div>
-              <div style={styles.bigScoreNumber}>72%</div>
-              <div style={styles.progressBarTrack}>
-                <div style={{ ...styles.progressBarFill, width: "72%", background: currentPalette.gradient }} />
-              </div>
-              <div style={styles.cardFooter}>
-                <span style={styles.subtextMuted}>3 actions left</span>
-                <button onClick={() => setIsProfileModalOpen(true)} style={styles.actionLinkBtn}>
-                  Complete profile →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Verified Skills */}
-        <div className="flip-card-container" style={flipStyles.container}>
-          <div className="flip-card-inner" style={flipStyles.inner}>
-            {/* FRONT COVER */}
-            <div
-              style={{
-                ...flipStyles.face,
-                ...flipStyles.front,
-                background: currentPalette.frontBg,
-                boxShadow: `3px 3px 0px ${currentPalette.accent}, 3px 3px 0px #000000`
-              }}
-            >
-              <div style={flipStyles.frontTopRow}>
-                <span style={{ ...flipStyles.frontCategoryPill, backgroundColor: currentPalette.iconBg, color: currentPalette.accent }}>
-                  PROOF
-                </span>
-                <span style={flipStyles.frontLivePulse}>● ATTESTED</span>
-              </div>
-
-              <div style={flipStyles.frontCenteredRow}>
-                <div style={{ ...flipStyles.frontIconCircle, backgroundColor: currentPalette.iconBg, borderColor: currentPalette.accent }}>
-                  ⚡
-                </div>
-                <h3 style={flipStyles.frontTitle}>Verified Skills</h3>
-              </div>
-            </div>
-
-            {/* BACK DETAILS */}
-            <div style={{ ...flipStyles.face, ...flipStyles.back }}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardLabel}>VERIFIED SKILLS</span>
-                <span style={styles.badgeGreen}>+2 new</span>
-              </div>
-              <div style={styles.bigScoreNumber}>06</div>
-              <div style={{ fontSize: "10px", color: "#16a34a", fontWeight: "800", margin: "2px 0" }}>
-                C++, CUDA, Raft, PDEs
-              </div>
-              <div style={styles.cardFooter}>
-                <span style={styles.subtextMuted}>Attested</span>
-                <button onClick={() => onNavigate("Skill Profile")} style={styles.actionLinkBtn}>
-                  View evidence →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Job Matches */}
-        <div className="flip-card-container" style={flipStyles.container}>
-          <div className="flip-card-inner" style={flipStyles.inner}>
-            {/* FRONT COVER */}
-            <div
-              style={{
-                ...flipStyles.face,
-                ...flipStyles.front,
-                background: currentPalette.frontBg,
-                boxShadow: `3px 3px 0px ${currentPalette.accent}, 3px 3px 0px #000000`
-              }}
-            >
-              <div style={flipStyles.frontTopRow}>
-                <span style={{ ...flipStyles.frontCategoryPill, backgroundColor: currentPalette.iconBg, color: currentPalette.accent }}>
-                  MATCHES
-                </span>
-                <span style={flipStyles.frontLivePulse}>● 8 TIER-1</span>
-              </div>
-
-              <div style={flipStyles.frontCenteredRow}>
-                <div style={{ ...flipStyles.frontIconCircle, backgroundColor: currentPalette.iconBg, borderColor: currentPalette.accent }}>
-                  🎯
-                </div>
-                <h3 style={flipStyles.frontTitle}>Job Matches</h3>
-              </div>
-            </div>
-
-            {/* BACK DETAILS */}
-            <div style={{ ...flipStyles.face, ...flipStyles.back }}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardLabel}>JOB MATCHES</span>
-                <span style={{ fontSize: "10px", fontWeight: "900", color: currentPalette.accent }}>Active Desks</span>
-              </div>
-              <div style={styles.bigScoreNumber}>24</div>
-              <div style={{ fontSize: "10px", color: currentPalette.accent, fontWeight: "800", margin: "2px 0" }}>
-                8 High Match (&gt;90%)
-              </div>
-              <div style={styles.cardFooter}>
-                <span style={styles.subtextMuted}>Jane St, Citadel</span>
-                <button onClick={() => onNavigate("Jobs")} style={styles.actionLinkBtn}>
-                  Explore jobs →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 5: Benchmarked Repos */}
-        <div className="flip-card-container" style={flipStyles.container}>
-          <div className="flip-card-inner" style={flipStyles.inner}>
-            {/* FRONT COVER */}
-            <div
-              style={{
-                ...flipStyles.face,
-                ...flipStyles.front,
-                background: currentPalette.frontBg,
-                boxShadow: `3px 3px 0px ${currentPalette.accent}, 3px 3px 0px #000000`
-              }}
-            >
-              <div style={flipStyles.frontTopRow}>
-                <span style={{ ...flipStyles.frontCategoryPill, backgroundColor: currentPalette.iconBg, color: currentPalette.accent }}>
-                  HARDWARE
-                </span>
-                <span style={flipStyles.frontLivePulse}>● 0-HEAP</span>
-              </div>
-
-              <div style={flipStyles.frontCenteredRow}>
-                <div style={{ ...flipStyles.frontIconCircle, backgroundColor: currentPalette.iconBg, borderColor: currentPalette.accent }}>
-                  💻
-                </div>
-                <h3 style={flipStyles.frontTitle}>Benchmarked Repos</h3>
-              </div>
-            </div>
-
-            {/* BACK DETAILS */}
-            <div style={{ ...flipStyles.face, ...flipStyles.back }}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardLabel}>BENCHMARKED REPOS</span>
-                <span style={{ fontSize: "10px", fontWeight: "900", color: "#ea580c" }}>Telemetry</span>
-              </div>
-              <div style={styles.bigScoreNumber}>04</div>
-              <div style={{ fontSize: "10px", color: "#ea580c", fontWeight: "800", margin: "2px 0" }}>
-                2 Hardware-Verified
-              </div>
-              <div style={styles.cardFooter}>
-                <span style={styles.subtextMuted}>Zero-Heap Proven</span>
-                <button onClick={() => onNavigate("Projects")} style={styles.actionLinkBtn}>
-                  Manage projects →
-                </button>
-              </div>
-            </div>
-          </div>
+        <div style={homeStyles.quickButtonsGroup}>
+          <button onClick={() => onNavigate("Jobs")} style={homeStyles.quickBtn}>▤ Find Jobs</button>
+          <button onClick={() => onNavigate("Assessments")} style={homeStyles.quickBtn}>✓ Take Assessment</button>
+          <button onClick={() => onNavigate("Projects")} style={homeStyles.quickBtn}>+ Add Project</button>
+          <button onClick={() => onNavigate("Career Copilot")} style={homeStyles.quickBtn}>✦ Ask Copilot</button>
+          <button onClick={() => onNavigate("Messages")} style={homeStyles.quickBtnSpecial}>💬 Messages ({applicationsCount + 3})</button>
         </div>
       </div>
 
-      {/* 3. QUICK COMMANDS TOOLBAR */}
-      <div style={styles.quickActionsBar}>
-        <div style={styles.quickActionsTitle}>
-          <span style={{ fontSize: "10px", fontWeight: "900", color: "#9ca3af", letterSpacing: "1px" }}>
-            COMMAND SHORTCUTS
-          </span>
-          <div style={{ fontSize: "14px", fontWeight: "900", color: "#ffffff" }}>
-            What do you want to accomplish today?
-          </div>
-        </div>
-
-        <div style={styles.quickButtonsGroup}>
-          <button onClick={() => onNavigate("Jobs")} style={styles.quickBtn}>
-            ▤ Find Jobs
-          </button>
-          <button onClick={() => onNavigate("Assessments")} style={styles.quickBtn}>
-            ✓ Take Assessment
-          </button>
-          <button onClick={() => onNavigate("Projects")} style={styles.quickBtn}>
-            + Add Project
-          </button>
-          <button onClick={() => onNavigate("Career Copilot")} style={styles.quickBtn}>
-            ✦ Ask Copilot
-          </button>
-          <button onClick={() => onNavigate("Messages")} style={styles.quickBtnSpecial}>
-            💬 Messages ({applicationsCount + 3})
-          </button>
-        </div>
-      </div>
-
-      {/* 4. GROWTH CURVE & RECRUITER RADAR */}
-      <div style={styles.growthSectionGrid}>
-        {/* Left: Dynamic SVG Growth Curve */}
-        <div style={styles.growthCurveCard}>
-          <div style={styles.cardTitleRow}>
+      {/* 4. GROWTH CURVE & PROFILE WIDGET */}
+      <div style={homeStyles.growthSectionGrid}>
+        <div style={homeStyles.growthCurveCard}>
+          <div style={homeStyles.cardTitleRow}>
             <div>
-              <span style={styles.subHeadingTag}>RATING ACCELERATION</span>
-              <h3 style={styles.blockHeading}>Verified Skill Score Growth Curve</h3>
+              <span style={homeStyles.subHeadingTag}>RATING ACCELERATION</span>
+              <h3 style={homeStyles.blockHeading}>Verified Skill Score Growth Curve</h3>
             </div>
-            <span style={styles.badgeGreen}>+332 pts over 5 Weeks</span>
+            <span style={homeStyles.badgeGreen}>+332 pts over 5 Weeks</span>
           </div>
-
-          <div style={styles.growthSvgWrapper}>
+          <div style={homeStyles.growthSvgWrapper}>
             <svg viewBox="0 0 340 160" style={{ width: "100%", height: "200px" }}>
               <defs>
                 <linearGradient id="scoreAreaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -480,345 +226,264 @@ export default function Home({ user, score = 0, applicationsCount = 0, onNavigat
                   <stop offset="100%" stopColor={currentPalette.accent} stopOpacity="0.0" />
                 </linearGradient>
               </defs>
-
-              {/* Grid Lines */}
-              {[40, 80, 120].map((y, idx) => (
-                <line key={idx} x1="20" y1={y} x2="320" y2={y} stroke="#e2e8f0" strokeDasharray="3,3" />
-              ))}
-
-              {/* Gradient Area Fill */}
+              {[40, 80, 120].map((y, idx) => (<line key={idx} x1="20" y1={y} x2="320" y2={y} stroke="var(--muted-border)" strokeDasharray="3,3" />))}
               <polygon points={areaPolygonStr} fill="url(#scoreAreaGrad)" />
-
-              {/* Primary Curve */}
               <polyline points={polylineStr} fill="none" stroke={currentPalette.accent} strokeWidth="4" strokeLinecap="round" />
-
-              {/* Interactive Hoverable Points */}
               {growthCurvePoints.map((pt, idx) => (
                 <g key={idx} onMouseEnter={() => setHoveredPoint(pt)} onMouseLeave={() => setHoveredPoint(null)}>
-                  <circle
-                    cx={pt.x}
-                    cy={pt.y}
-                    r={hoveredPoint?.label === pt.label ? "7" : "5"}
-                    fill="#ffea28"
-                    stroke="#000000"
-                    strokeWidth="2.5"
-                    style={{ cursor: "pointer", transition: "all 0.1s ease" }}
-                  />
-                  <text x={pt.x} y="156" fontSize="10" fontWeight="900" textAnchor="middle" fill="#64748b">
-                    {pt.label}
-                  </text>
+                  <circle cx={pt.x} cy={pt.y} r="5" fill="#ffea28" stroke="var(--border-main)" strokeWidth="2.5" />
                 </g>
               ))}
             </svg>
-
-            {hoveredPoint && (
-              <div style={styles.curveTooltip}>
-                <strong>{hoveredPoint.label}: {hoveredPoint.score} Pts</strong>
-              </div>
-            )}
-          </div>
-
-          <div style={styles.growthMilestonesRow}>
-            <div style={styles.milestoneItem}>
-              <div style={{ fontSize: "10px", fontWeight: "900", color: "#64748b" }}>INITIAL BASELINE</div>
-              <div style={{ fontSize: "16px", fontWeight: "900" }}>410 pts</div>
-            </div>
-            <div style={styles.milestoneItem}>
-              <div style={{ fontSize: "10px", fontWeight: "900", color: "#64748b" }}>GROWTH RATE</div>
-              <div style={{ fontSize: "16px", fontWeight: "900", color: "#16a34a" }}>+55 pts / wk</div>
-            </div>
-            <div style={styles.milestoneItem}>
-              <div style={{ fontSize: "10px", fontWeight: "900", color: "#64748b" }}>TARGET STATUS</div>
-              <div style={{ fontSize: "16px", fontWeight: "900", color: currentPalette.accent }}>Top 1% (820+)</div>
-            </div>
           </div>
         </div>
 
-        {/* Right: Live Recruiter Radar */}
-        <div style={styles.recruiterRadarCard}>
-          <div style={styles.cardTitleRow}>
-            <div>
-              <span style={styles.subHeadingTag}>RECRUITER RADAR</span>
-              <h3 style={styles.blockHeading}>Live Firm Inquiries</h3>
-            </div>
-            <span style={styles.livePulsePill}>● 4 Firms Reviewing</span>
-          </div>
-
-          <div style={styles.recruiterList}>
-            <div style={styles.recruiterItem} onClick={() => onNavigate("Messages")}>
-              <div style={{ ...styles.recruiterLogo, backgroundColor: "#1e3a8a" }}>JS</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <strong style={{ fontSize: "13px" }}>Jane Street Capital</strong>
-                  <span style={{ fontSize: "10px", color: "#16a34a", fontWeight: "900" }}>Active Screen</span>
-                </div>
-                <div style={{ fontSize: "11px", color: "#4b5563" }}>Marcus Vance reviewed your C++20 Order Book</div>
-              </div>
-            </div>
-
-            <div style={styles.recruiterItem} onClick={() => onNavigate("Messages")}>
-              <div style={{ ...styles.recruiterLogo, backgroundColor: "#0f172a" }}>CS</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <strong style={{ fontSize: "13px" }}>Citadel Securities</strong>
-                  <span style={{ fontSize: "10px", color: "#7c3aed", fontWeight: "900" }}>Telemetry Verified</span>
-                </div>
-                <div style={{ fontSize: "11px", color: "#4b5563" }}>Elena Rostova flagged Stochastic PDE score (88%)</div>
-              </div>
-            </div>
-
-            <div style={styles.recruiterItem} onClick={() => onNavigate("Messages")}>
-              <div style={{ ...styles.recruiterLogo, backgroundColor: "#dc2626" }}>OP</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <strong style={{ fontSize: "13px" }}>Optiver</strong>
-                  <span style={{ fontSize: "10px", color: "#ea580c", fontWeight: "900" }}>OA Fast-Track</span>
-                </div>
-                <div style={{ fontSize: "11px", color: "#4b5563" }}>Sarah Jenkins invited you to direct 2027 Trading screening</div>
-              </div>
-            </div>
-          </div>
-
-          <button onClick={() => onNavigate("Messages")} style={styles.openMessagesFullBtn}>
-            Open Direct Recruiter Inbox (3 Unread) 💬
-          </button>
-        </div>
-      </div>
-
-      {/* 5. NEXT ACTIONS & PROFILE WIDGET */}
-      <div style={styles.bottomLayout}>
-        <div style={styles.recommendedCard}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <div>
-              <span style={{ fontSize: "10px", fontWeight: "900", color: "#6b7280", letterSpacing: "1px" }}>RECOMMENDED ROADMAP</span>
-              <h3 style={{ margin: "2px 0 0 0", fontSize: "18px", fontWeight: "900" }}>Your Next High-Impact Steps</h3>
-            </div>
-            <button onClick={() => onNavigate("Assessments")} style={styles.viewAllBtn}>
-              View all actions →
-            </button>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <div style={styles.actionItemBox}>
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <span style={styles.actionItemNumber}>01</span>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "900" }}>Complete Distributed Systems (Raft) Assessment</h4>
-                  <p style={{ margin: "2px 0 4px 0", fontSize: "12px", color: "#4b5563" }}>
-                    Raise your distributed systems pillar from 78% to 92% to unlock Google Core Infra direct bypass.
-                  </p>
-                  <span style={styles.highImpactPill}>HIGH IMPACT</span>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "13px", fontWeight: "900", color: "#7c3aed" }}>+38 pts</span>
-                <button onClick={() => onNavigate("Assessments")} style={styles.startActionBtn}>
-                  Start →
-                </button>
-              </div>
-            </div>
-
-            <div style={styles.actionItemBox}>
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <span style={styles.actionItemNumber}>02</span>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "900" }}>Upsolve Codeforces Div. 2 (Problems C &amp; D)</h4>
-                  <p style={{ margin: "2px 0 4px 0", fontSize: "12px", color: "#4b5563" }}>
-                    Practice Lazy Segment Trees and Suffix Automaton templates with AI Career Copilot.
-                  </p>
-                  <span style={{ ...styles.highImpactPill, backgroundColor: "#e0e7ff", color: "#3730a3" }}>DSA BOOST</span>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "13px", fontWeight: "900", color: "#16a34a" }}>+25 pts</span>
-                <button onClick={() => onNavigate("Career Copilot")} style={styles.startActionBtn}>
-                  Launch ➔
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Profile Widget */}
-        <div style={styles.profileWidgetCard}>
+        {/* High-Difficulty Dynamic Profile Completion Block */}
+        <div style={homeStyles.profileWidgetCard}>
           <div>
             <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "12px" }}>
-              <div style={styles.avatarBoxWidget}>
-                {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
+              <div style={homeStyles.avatarBoxWidget}>
+                {"F"}
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "900" }}>{user?.name || "Alex Henderson"}</h4>
-                <span style={{ fontSize: "11px", color: "#6b7280" }}>{user?.branch || "Mathematics & Computing"}</span>
+                <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "900" }}>furlong</h4>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{profileData.degree}</span>
               </div>
             </div>
 
-            <div style={styles.profileStatsSmallBox}>
+            <div style={homeStyles.profileStatsSmallBox}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", fontWeight: "800", marginBottom: "4px" }}>
-                <span>PROFILE COMPLETION</span>
-                <span style={{ color: "#7c3aed" }}>72%</span>
+                <span>PROFILE MULTIPLIER</span>
+                <span style={{ color: "#7c3aed" }}>{profileStrength}%</span>
               </div>
-              <div style={styles.progressBarTrack}>
-                <div style={{ ...styles.progressBarFill, width: "72%" }} />
+              <div style={homeStyles.progressBarTrack}>
+                <div style={{ width: `${profileStrength}%`, height: "100%", background: "linear-gradient(90deg, #ff3d9a, #8b5cf6)", transition: "width 1s ease" }} />
               </div>
-              <div style={{ fontSize: "10px", color: "#4b5563", marginTop: "6px" }}>
-                ✓ Codeforces connected (@{user?.cfHandle || "furlong"})<br />
-                ✓ GitHub benchmark verified (@{user?.githubHandle || "torvalds"})
+
+              {/* Conditional Elite Certificates */}
+              {profileStrength >= 90 ? (
+                <div style={{ marginTop: "8px", backgroundColor: "#fef08a", color: "#854d0e", padding: "6px 10px", borderRadius: "6px", fontSize: "10px", fontWeight: "900", border: "1px solid #ca8a04", display: "flex", alignItems: "center", gap: "6px" }}>
+                  🏆 CERTIFICATE OF TOP NOTCH PROFILE
+                </div>
+              ) : profileStrength >= 80 ? (
+                <div style={{ marginTop: "8px", backgroundColor: "#e0e7ff", color: "#3730a3", padding: "6px 10px", borderRadius: "6px", fontSize: "10px", fontWeight: "900", border: "1px solid #4f46e5", display: "flex", alignItems: "center", gap: "6px" }}>
+                  🏅 CERTIFICATE OF EXCELLENCE
+                </div>
+              ) : null}
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "12px" }}>
+                <div style={homeStyles.checklistItem}>
+                  <span style={homeStyles.checkCircleGreen}>✓</span>
+                  <div>
+                    <strong style={{ fontSize: "10px", display: "block" }}>Academic Baseline ({profileData.tier})</strong>
+                    <span style={{ fontSize: "9px", color: "var(--text-muted)" }}>{profileData.college} · GPA: {profileData.gpa}</span>
+                  </div>
+                </div>
+                <div style={homeStyles.checklistItem}>
+                  <span style={profileData.assessmentsPassed === 5 ? homeStyles.checkCircleGreen : homeStyles.checkCircleEmpty}>
+                    {profileData.assessmentsPassed === 5 ? "✓" : ""}
+                  </span>
+                  <div>
+                    <strong style={{ fontSize: "10px", display: "block", color: profileData.assessmentsPassed === 5 ? "var(--text-main)" : "var(--text-muted)" }}>
+                      Verified Assessments ({profileData.assessmentsPassed}/5)
+                    </strong>
+                    <span style={{ fontSize: "9px", color: "var(--text-muted)" }}>Pass intense core track tests to boost visibility.</span>
+                  </div>
+                </div>
+                <div style={homeStyles.checklistItem}>
+                  <span style={profileData.projectsVerified === 4 ? homeStyles.checkCircleGreen : homeStyles.checkCircleEmpty}>
+                    {profileData.projectsVerified === 4 ? "✓" : ""}
+                  </span>
+                  <div>
+                    <strong style={{ fontSize: "10px", display: "block", color: profileData.projectsVerified === 4 ? "var(--text-main)" : "var(--text-muted)" }}>
+                      Hardware-Verified Projects ({profileData.projectsVerified}/4)
+                    </strong>
+                    <span style={{ fontSize: "9px", color: "var(--text-muted)" }}>Link GitHub repos for cryptographic telemetry extraction.</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <button onClick={() => setIsProfileModalOpen(true)} style={styles.completeProfileWideBtn}>
-            Edit &amp; Complete Profile ⚙️
+          <button onClick={() => setIsProfileModalOpen(true)} style={homeStyles.completeProfileWideBtn}>
+            Edit &amp; Optimize Profile ⚙️
           </button>
         </div>
       </div>
 
-      {/* 6. SUPERDAY CLEARANCE MODAL */}
+      {/* ==========================================================================
+         5. CONTINUOUS SLOW-SCROLLING ONE-LINE TESTIMONIALS MARQUEE (100s SPEED)
+         ========================================================================== */}
+      <div style={homeStyles.testimonialsSection}>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <span style={{ fontSize: "10px", fontWeight: "900", color: "#7c3aed", letterSpacing: "1px", backgroundColor: "var(--bg-card)", padding: "3px 10px", borderRadius: "8px", border: "1px solid var(--border-main)" }}>VERIFIED PLACEMENTS</span>
+          <h3 style={{ margin: "10px 0 4px 0", fontSize: "22px", fontWeight: "900" }}>Engineers Standing Behind Their Dream Companies</h3>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>Smooth slow-gliding marquee tracking candidates who secured elite positions.</p>
+        </div>
+
+        {/* Marquee Wrapper Container */}
+        <div style={homeStyles.marqueeOuter}>
+          <div style={homeStyles.marqueeTrack}>
+            {/* Duplicated array to create a seamless infinite loop */}
+            {[...TESTIMONIALS_DATA, ...TESTIMONIALS_DATA].map((t, idx) => (
+              <div key={idx} style={homeStyles.testimonialCard}>
+                <div style={{ position: "relative", height: "130px", backgroundColor: t.firmColor, overflow: "hidden", borderBottom: "2px solid var(--border-main)" }}>
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "36px", fontWeight: "900", color: "#fff", opacity: 0.2, whiteSpace: "nowrap", letterSpacing: "2px" }}>
+                    {t.firm.toUpperCase()}
+                  </div>
+                  <img
+                    src={t.photo}
+                    alt={t.name}
+                    loading="lazy"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", position: "relative", zIndex: 1, filter: "contrast(1.05) saturate(1.05)" }}
+                  />
+                  <div style={{ position: "absolute", bottom: "8px", right: "8px", backgroundColor: t.firmColor, color: "#fff", padding: "2px 6px", borderRadius: "4px", fontSize: "9px", fontWeight: "900", border: "1px solid #fff", boxShadow: "1px 1px 0px #000", zIndex: 2 }}>
+                    🏢 {t.firm}
+                  </div>
+                </div>
+
+                <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1, backgroundColor: "var(--bg-card)" }}>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
+                      <h4 style={{ margin: 0, fontSize: "13px", fontWeight: "900" }}>{t.name}</h4>
+                      <span style={{ fontSize: "8px", fontWeight: "900", color: "var(--green-text)", backgroundColor: "var(--green-bg)", padding: "1px 4px", borderRadius: "3px", border: "1px solid var(--green-border)" }}>HIRED</span>
+                    </div>
+                    <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "800", marginBottom: "6px" }}>{t.role}</div>
+                    <p style={{ margin: 0, fontSize: "11px", color: "var(--text-main)", lineHeight: "1.3", fontStyle: "italic", opacity: 0.85 }}>
+                      "{t.quote}"
+                    </p>
+                  </div>
+                  <div style={{ marginTop: "8px", paddingTop: "6px", borderTop: "1px dashed var(--muted-border)", fontSize: "9px", fontWeight: "900", color: "var(--green-border)" }}>
+                    ✓ {t.metrics}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ==========================================================================
+          MODALS (Detailed Profile Input with Hard Difficulty Logic)
+         ========================================================================== */}
       {isSuperdayModalOpen && (
         <div style={modalStyles.overlay} onClick={() => setIsSuperdayModalOpen(false)}>
           <div style={modalStyles.card} onClick={(e) => e.stopPropagation()}>
             <div style={modalStyles.header}>
               <div>
-                <span style={{ fontSize: "10px", fontWeight: "900", color: "#16a34a", letterSpacing: "1px" }}>
-                  FAST-PASS RECRUITER CLEARANCE
-                </span>
-                <h2 style={{ margin: "2px 0 0 0", fontSize: "20px", fontWeight: "900" }}>Active Superday Fast-Track Radar</h2>
+                <span style={{ fontSize: "10px", fontWeight: "900", color: "var(--green-border)", letterSpacing: "1px" }}>FAST-PASS RECRUITER CLEARANCE</span>
+                <h2 style={{ margin: "2px 0 0 0", fontSize: "20px", fontWeight: "900" }}>Active Superday Radar</h2>
               </div>
-              <button onClick={() => setIsSuperdayModalOpen(false)} style={modalStyles.closeBtn}>
-                ✕
-              </button>
+              <button onClick={() => setIsSuperdayModalOpen(false)} style={modalStyles.closeBtn}>✕</button>
             </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "14px 0" }}>
-              <div style={styles.fastPassItem}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <strong>Jane Street Capital</strong>
-                  <span style={styles.badgeGreen}>OA Bypassed</span>
+            
+            {profileStrength >= 80 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "14px 0" }}>
+                <div style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-main)", borderRadius: "8px", padding: "10px 12px", boxShadow: "2px 2px 0px var(--shadow-main)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <strong>Jane Street Capital</strong>
+                    <span style={{ backgroundColor: "var(--green-bg)", color: "var(--green-text)", border: "1px solid var(--border-main)", borderRadius: "4px", padding: "1px 4px", fontSize: "9px", fontWeight: "900" }}>OA Bypassed</span>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>Quant Developer Intern · C++20 Zero-Heap Verified</div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#4b5563" }}>Quant Developer Intern · C++20 Zero-Heap Verified</div>
               </div>
-              <div style={styles.fastPassItem}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <strong>Citadel Securities</strong>
-                  <span style={{ ...styles.badgeGreen, backgroundColor: "#e0e7ff", color: "#3730a3" }}>Direct Screen</span>
-                </div>
-                <div style={{ fontSize: "12px", color: "#4b5563" }}>Quantitative Researcher · Stochastic PDE Score (88%)</div>
+            ) : (
+              <div style={{ padding: "20px", textAlign: "center", border: "1px dashed #ef4444", borderRadius: "8px", backgroundColor: "#fef2f2", color: "#991b1b", margin: "14px 0" }}>
+                <strong>Insufficient Profile Strength</strong>
+                <p style={{ fontSize: "12px", margin: "4px 0 0 0" }}>You must reach at least 80% multiplier to bypass standard ATS queues and access direct superdays.</p>
               </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setIsSuperdayModalOpen(false);
-                onNavigate("Messages");
-              }}
-              style={modalStyles.saveBtn}
-            >
-              Open Direct Messages to Schedule ➔
+            )}
+            
+            <button onClick={() => { setIsSuperdayModalOpen(false); onNavigate("Messages"); }} style={modalStyles.saveBtn}>
+              {profileStrength >= 80 ? "Open Direct Messages to Schedule ➔" : "Close Radar"}
             </button>
           </div>
         </div>
       )}
 
-      {/* 7. COMPLETE PROFILE MODAL */}
       {isProfileModalOpen && (
         <div style={modalStyles.overlay} onClick={() => setIsProfileModalOpen(false)}>
-          <div style={modalStyles.card} onClick={(e) => e.stopPropagation()}>
+          <div style={{ ...modalStyles.card, maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
             <div style={modalStyles.header}>
               <div>
-                <span style={{ fontSize: "10px", fontWeight: "900", color: "#7c3aed", letterSpacing: "1px" }}>
-                  CANDIDATE ONBOARDING
-                </span>
-                <h2 style={{ margin: "2px 0 0 0", fontSize: "20px", fontWeight: "900" }}>Complete Your Skill Profile</h2>
+                <span style={{ fontSize: "10px", fontWeight: "900", color: "#7c3aed", letterSpacing: "1px" }}>CANDIDATE ONBOARDING</span>
+                <h2 style={{ margin: "2px 0 0 0", fontSize: "20px", fontWeight: "900" }}>Optimize Your Profile Multiplier</h2>
               </div>
-              <button onClick={() => setIsProfileModalOpen(false)} style={modalStyles.closeBtn}>
-                ✕
-              </button>
+              <button onClick={() => setIsProfileModalOpen(false)} style={modalStyles.closeBtn}>✕</button>
             </div>
-
+            
             <form onSubmit={handleSaveProfile} style={modalStyles.form}>
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>College / University</label>
-                <input
-                  type="text"
-                  value={profileData.college}
-                  onChange={(e) => setProfileData({ ...profileData, college: e.target.value })}
-                  style={modalStyles.input}
-                  required
-                />
-              </div>
-
-              <div style={modalStyles.inputGroup}>
-                <label style={modalStyles.label}>Engineering Branch / Major</label>
-                <input
-                  type="text"
-                  value={profileData.branch}
-                  onChange={(e) => setProfileData({ ...profileData, branch: e.target.value })}
-                  style={modalStyles.input}
-                  required
-                />
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              {/* Row 1: College & Tier */}
+              <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "12px" }}>
                 <div style={modalStyles.inputGroup}>
-                  <label style={modalStyles.label}>Codeforces Handle</label>
-                  <input
-                    type="text"
-                    value={profileData.cfHandle}
-                    onChange={(e) => setProfileData({ ...profileData, cfHandle: e.target.value })}
-                    style={modalStyles.input}
-                  />
+                  <label style={modalStyles.label}>Institution / University Name</label>
+                  <input type="text" value={profileData.college} onChange={(e) => setProfileData({ ...profileData, college: e.target.value })} style={modalStyles.input} required />
                 </div>
                 <div style={modalStyles.inputGroup}>
-                  <label style={modalStyles.label}>GitHub Username</label>
-                  <input
-                    type="text"
-                    value={profileData.githubHandle}
-                    onChange={(e) => setProfileData({ ...profileData, githubHandle: e.target.value })}
-                    style={modalStyles.input}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div style={modalStyles.inputGroup}>
-                  <label style={modalStyles.label}>Current City</label>
-                  <input
-                    type="text"
-                    value={profileData.currentLocation}
-                    onChange={(e) => setProfileData({ ...profileData, currentLocation: e.target.value })}
-                    style={modalStyles.input}
-                  />
-                </div>
-                <div style={modalStyles.inputGroup}>
-                  <label style={modalStyles.label}>Target Work Location</label>
-                  <select
-                    value={profileData.workLocation}
-                    onChange={(e) => setProfileData({ ...profileData, workLocation: e.target.value })}
-                    style={modalStyles.select}
-                  >
-                    <option value="Singapore / London">Singapore / London (Relocation)</option>
-                    <option value="Bengaluru / Hyderabad">Bengaluru / Hyderabad (India)</option>
-                    <option value="New York / US">New York / US</option>
-                    <option value="Global Remote">Global Remote</option>
+                  <label style={modalStyles.label}>University Tier (Base Score)</label>
+                  <select value={profileData.tier} onChange={(e) => setProfileData({ ...profileData, tier: e.target.value })} style={modalStyles.select}>
+                    <option value="Elite (Stanford/MIT)">Elite (Stanford/MIT/Ivy) - 15% Base</option>
+                    <option value="Tier 1">Tier 1 (IIT/NIT/BITS) - 10% Base</option>
+                    <option value="Tier 2">Tier 2 (State Top) - 5% Base</option>
+                    <option value="Tier 3">Tier 3 (Local/Private) - 2% Base</option>
                   </select>
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-                <button type="button" onClick={() => setIsProfileModalOpen(false)} style={modalStyles.cancelBtn}>
-                  Cancel
-                </button>
-                <button type="submit" style={modalStyles.saveBtn}>
-                  Save &amp; Verify Profile 🚀
-                </button>
+              {/* Row 2: Degree & CGPA */}
+              <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "12px" }}>
+                <div style={modalStyles.inputGroup}>
+                  <label style={modalStyles.label}>Degree & Branch</label>
+                  <input type="text" value={profileData.degree} onChange={(e) => setProfileData({ ...profileData, degree: e.target.value })} style={modalStyles.input} placeholder="e.g., BSc Hons Data Science & AI" required />
+                </div>
+                <div style={modalStyles.inputGroup}>
+                  <label style={modalStyles.label}>Current CGPA / GPA</label>
+                  <input type="number" step="0.1" max="10" value={profileData.gpa} onChange={(e) => setProfileData({ ...profileData, gpa: e.target.value })} style={modalStyles.input} required />
+                </div>
+              </div>
+
+              {/* Row 3: Action Simulator (Hard Mode) */}
+              <div style={{ padding: "12px", backgroundColor: "var(--bg-main)", border: "1.5px dashed var(--muted-border)", borderRadius: "8px", margin: "8px 0" }}>
+                <div style={{ fontSize: "11px", fontWeight: "800", color: "var(--text-main)", marginBottom: "8px" }}>TELEMETRY SYNCHRONIZATION (MOCK ACTIONS)</div>
+                <p style={{ fontSize: "10px", color: "var(--text-muted)", margin: "0 0 8px 0", lineHeight: "1.3" }}>Crossing 50% is intentionally difficult. You must grind verified assessments (5 max) and real hardware-attested GitHub repositories (4 max).</p>
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  <button type="button" onClick={() => setProfileData(p => ({ ...p, assessmentsPassed: Math.min(p.assessmentsPassed + 1, 5) }))} style={{ ...homeStyles.quickBtn, padding: "6px 10px", fontSize: "10px", border: "1.5px solid var(--border-main)" }}>
+                    + Complete Assessment (+8%)
+                  </button>
+                  <button type="button" onClick={() => setProfileData(p => ({ ...p, projectsVerified: Math.min(p.projectsVerified + 1, 4) }))} style={{ ...homeStyles.quickBtn, padding: "6px 10px", fontSize: "10px", border: "1.5px solid var(--border-main)" }}>
+                    + Connect GitHub Repo (+10%)
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <button type="button" onClick={() => setIsProfileModalOpen(false)} style={modalStyles.cancelBtn}>Cancel</button>
+                <button type="submit" style={modalStyles.saveBtn}>Recalculate &amp; Save Profile 🚀</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Global CSS for In-Place 3D Model Pop Cards */}
+      {/* Global CSS for Theme & Marquee */}
       <style>{`
+        :root {
+          --bg-main: #ffffff;
+          --bg-card: #fdfbf7;
+          --text-main: #000000;
+          --text-muted: #4b5563;
+          --border-main: #000000;
+          --shadow-main: #000000;
+          --invert-bg: #000000;
+          --invert-text: #ffffff;
+          --muted-border: #cbd5e1;
+          --green-bg: #bbf7d0;
+          --green-text: #166534;
+          --green-border: #16a34a;
+        }
+        @keyframes marqueeSlow {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
         .flip-card-container {
           perspective: 1000px;
           position: relative;
@@ -828,660 +493,94 @@ export default function Home({ user, score = 0, applicationsCount = 0, onNavigat
           position: relative;
           width: 100%;
           height: 100%;
-          transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s ease;
+          transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           transform-style: preserve-3d;
-          transform-origin: center center;
         }
         .flip-card-container:hover {
           z-index: 50;
         }
-        /* IN-PLACE 3D SCALE & POP FORWARD */
         .flip-card-container:hover .flip-card-inner {
-          transform: rotateY(180deg) translateZ(40px) scale(1.08);
+          transform: rotateY(180deg) translateZ(30px) scale(1.06);
         }
       `}</style>
     </div>
   );
 }
 
-const flipStyles = {
-  container: {
-    backgroundColor: "transparent",
-    minHeight: "145px",
-    cursor: "pointer",
-    position: "relative"
-  },
-  inner: {
-    minHeight: "145px",
-    width: "100%",
-    height: "100%"
-  },
-  face: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backfaceVisibility: "hidden",
-    WebkitBackfaceVisibility: "hidden",
-    borderRadius: "16px",
-    border: "2.5px solid #000000",
-    padding: "12px 14px",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    transition: "box-shadow 0.5s ease, background 0.5s ease"
-  },
-  front: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    zIndex: 2
-  },
-  frontTopRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    width: "100%",
-    alignItems: "center"
-  },
-  frontCenteredRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "10px",
-    flex: 1,
-    width: "100%",
-    margin: "auto 0"
-  },
-  back: {
-    backgroundColor: "#ffffff",
-    transform: "rotateY(180deg)",
-    boxShadow: "6px 6px 0px #000000, 0 16px 32px rgba(0,0,0,0.15)",
-    justifyContent: "space-between",
-    zIndex: 1
-  },
-  frontCategoryPill: {
-    fontSize: "9px",
-    fontWeight: "900",
-    letterSpacing: "0.8px",
-    padding: "2px 7px",
-    borderRadius: "6px",
-    border: "1px solid #000000",
-    textTransform: "uppercase"
-  },
-  frontLivePulse: {
-    fontSize: "8px",
-    fontWeight: "900",
-    color: "#16a34a",
-    letterSpacing: "0.5px"
-  },
-  frontIconCircle: {
-    width: "38px",
-    height: "38px",
-    minWidth: "38px",
-    borderRadius: "10px",
-    border: "2px solid #000000",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "18px",
-    boxShadow: "2px 2px 0px #000000",
-    transition: "border-color 0.6s ease, background-color 0.6s ease"
-  },
-  frontTitle: {
-    margin: 0,
-    fontSize: "15px",
-    fontWeight: "900",
-    color: "#000000",
-    letterSpacing: "-0.4px",
-    lineHeight: "1.2"
-  }
+/* ==========================================================================
+   STYLES
+   ========================================================================== */
+const homeStyles = {
+  container: { padding: "24px", width: "100%", backgroundColor: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Space Grotesk', system-ui, sans-serif", boxSizing: "border-box", overflowX: "hidden", minHeight: "100vh" },
+  heroCard: { backgroundColor: "var(--bg-main)", border: "2.5px solid var(--border-main)", borderRadius: "18px", padding: "24px 28px", marginBottom: "20px" },
+  badgeRow: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" },
+  sectionMiniTag: { fontSize: "11px", fontWeight: "900", color: "var(--text-muted)", letterSpacing: "1px" },
+  dynamicTagBadge: { borderRadius: "6px", padding: "2px 8px", fontSize: "10px", fontWeight: "900", letterSpacing: "0.5px" },
+  mainHeading: { fontSize: "40px", fontWeight: "900", margin: "0 0 10px 0", letterSpacing: "-1.5px", color: "var(--text-main)", lineHeight: "1.1" },
+  quoteBox: { display: "flex", gap: "12px", backgroundColor: "var(--bg-card)", border: "2px solid var(--border-main)", borderRadius: "12px", padding: "12px 18px", margin: "12px 0 14px 0", boxShadow: "3px 3px 0px var(--shadow-main)" },
+  quoteIcon: { fontSize: "32px", fontWeight: "900", lineHeight: "0.8" },
+  quoteText: { margin: 0, fontSize: "14px", fontWeight: "800", color: "var(--text-main)", lineHeight: "1.4" },
+  quoteAuthor: { fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" },
+  subHeading: { fontSize: "13px", color: "var(--text-muted)", margin: 0 },
+  metricsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "20px" },
+  cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" },
+  cardLabel: { fontSize: "9px", fontWeight: "900", color: "var(--text-muted)", letterSpacing: "0.5px" },
+  badgeGreen: { backgroundColor: "var(--green-bg)", color: "var(--green-text)", border: "1px solid var(--border-main)", borderRadius: "4px", padding: "1px 4px", fontSize: "9px", fontWeight: "900" },
+  bigScoreNumber: { fontSize: "26px", fontWeight: "900", color: "var(--text-main)", letterSpacing: "-1px" },
+  cardFooter: { display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px dashed var(--muted-border)", paddingTop: "6px", marginTop: "2px" },
+  subtextMuted: { fontSize: "8px", fontWeight: "800", color: "var(--text-muted)" },
+  actionLinkBtn: { background: "none", border: "none", fontSize: "10px", fontWeight: "900", color: "var(--text-main)", cursor: "pointer", padding: 0, textDecoration: "underline" },
+  quickActionsBar: { backgroundColor: "var(--invert-bg)", borderRadius: "16px", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", boxShadow: "4px 4px 0px #ff3d9a", flexWrap: "wrap", gap: "14px" },
+  quickActionsTitle: { display: "flex", flexDirection: "column", gap: "2px" },
+  quickButtonsGroup: { display: "flex", gap: "8px", flexWrap: "wrap" },
+  quickBtn: { backgroundColor: "#1e1e24", color: "#fff", border: "1.5px solid var(--border-main)", borderRadius: "8px", padding: "8px 14px", fontSize: "12px", fontWeight: "800", cursor: "pointer" },
+  quickBtnSpecial: { backgroundColor: "#ffea28", color: "#000", border: "1.5px solid var(--border-main)", borderRadius: "8px", padding: "8px 14px", fontSize: "12px", fontWeight: "900", cursor: "pointer", boxShadow: "2px 2px 0px #ff3d9a" },
+  growthSectionGrid: { display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: "20px", marginBottom: "24px" },
+  growthCurveCard: { backgroundColor: "var(--bg-main)", border: "2.5px solid var(--border-main)", borderRadius: "16px", padding: "20px", boxShadow: "5px 5px 0px var(--shadow-main)" },
+  cardTitleRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" },
+  subHeadingTag: { fontSize: "10px", fontWeight: "900", color: "var(--text-muted)" },
+  blockHeading: { margin: "2px 0 0 0", fontSize: "18px", fontWeight: "900" },
+  growthSvgWrapper: { position: "relative", padding: "10px 0" },
+  profileWidgetCard: { backgroundColor: "var(--bg-main)", border: "2.5px solid var(--border-main)", borderRadius: "16px", padding: "20px", boxShadow: "5px 5px 0px var(--shadow-main)", display: "flex", flexDirection: "column", justifyContent: "space-between" },
+  avatarBoxWidget: { width: "38px", height: "38px", borderRadius: "10px", backgroundColor: "var(--invert-bg)", color: "var(--invert-text)", border: "2px solid var(--border-main)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "900", fontSize: "16px" },
+  profileStatsSmallBox: { backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-main)", borderRadius: "10px", padding: "12px", marginTop: "8px" },
+  progressBarTrack: { height: "6px", backgroundColor: "var(--muted-border)", borderRadius: "4px", overflow: "hidden", margin: "6px 0", border: "1px solid var(--border-main)" },
+  completeProfileWideBtn: { backgroundColor: "var(--bg-main)", color: "var(--text-main)", border: "2px solid var(--border-main)", borderRadius: "10px", padding: "10px", fontWeight: "900", fontSize: "12px", cursor: "pointer", boxShadow: "3px 3px 0px var(--shadow-main)", width: "100%", marginTop: "12px" },
+  checklistItem: { display: "flex", alignItems: "flex-start", gap: "8px" },
+  checkCircleGreen: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: "14px", height: "14px", borderRadius: "50%", backgroundColor: "var(--green-border)", color: "#fff", fontSize: "9px", fontWeight: "900", marginTop: "2px" },
+  checkCircleEmpty: { display: "inline-block", width: "14px", height: "14px", borderRadius: "50%", border: "1.5px solid var(--muted-border)", marginTop: "2px" },
+  
+  // Marquee Styles
+  testimonialsSection: { marginTop: "32px", backgroundColor: "var(--bg-main)", border: "2.5px solid var(--border-main)", borderRadius: "18px", padding: "24px 0", boxShadow: "5px 5px 0px var(--shadow-main)", overflow: "hidden" },
+  marqueeOuter: { width: "100%", overflow: "hidden", display: "flex", position: "relative", padding: "10px 0" },
+  marqueeTrack: { display: "flex", gap: "16px", width: "max-content", animation: "marqueeSlow 100s linear infinite" },
+  testimonialCard: { backgroundColor: "var(--bg-card)", border: "2px solid var(--border-main)", borderRadius: "12px", overflow: "hidden", boxShadow: "3px 3px 0px var(--shadow-main)", display: "flex", flexDirection: "column", width: "260px", flexShrink: 0 }
 };
 
-const styles = {
-  container: {
-    padding: "24px",
-    width: "100%",
-    color: "#111827",
-    fontFamily: "'Space Grotesk', system-ui, sans-serif",
-    boxSizing: "border-box"
-  },
-  heroCard: {
-    backgroundColor: "#ffffff",
-    border: "2.5px solid #000000",
-    borderRadius: "18px",
-    padding: "24px 28px",
-    marginBottom: "20px",
-    transition: "border-color 0.8s ease, box-shadow 0.8s ease"
-  },
-  badgeRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "8px",
-    flexWrap: "wrap"
-  },
-  sectionMiniTag: {
-    fontSize: "11px",
-    fontWeight: "900",
-    color: "#6b7280",
-    letterSpacing: "1px"
-  },
-  dynamicTagBadge: {
-    borderRadius: "6px",
-    padding: "2px 8px",
-    fontSize: "10px",
-    fontWeight: "900",
-    letterSpacing: "0.5px",
-    transition: "all 0.6s ease"
-  },
-  mainHeading: {
-    fontSize: "40px",
-    fontWeight: "900",
-    margin: "0 0 10px 0",
-    letterSpacing: "-1.5px",
-    color: "#000000",
-    lineHeight: "1.1"
-  },
-  quoteBox: {
-    display: "flex",
-    gap: "12px",
-    backgroundColor: "#fdfbf7",
-    border: "2px solid #000000",
-    borderRadius: "12px",
-    padding: "12px 18px",
-    margin: "12px 0 14px 0",
-    boxShadow: "3px 3px 0px #000000"
-  },
-  quoteIcon: {
-    fontSize: "32px",
-    fontWeight: "900",
-    lineHeight: "0.8",
-    userSelect: "none",
-    transition: "color 0.6s ease"
-  },
-  quoteText: {
-    margin: 0,
-    fontSize: "14px",
-    fontWeight: "800",
-    color: "#18181b",
-    lineHeight: "1.4"
-  },
-  quoteAuthor: {
-    fontSize: "11px",
-    color: "#6b7280",
-    marginTop: "4px"
-  },
-  subHeading: {
-    fontSize: "13px",
-    color: "#4b5563",
-    margin: 0
-  },
-  fastTrackStatusBadge: {
-    backgroundColor: "#bbf7d0",
-    border: "2px solid #16a34a",
-    borderRadius: "14px",
-    padding: "12px 18px",
-    boxShadow: "3px 3px 0px #000000",
-    cursor: "pointer",
-    minWidth: "240px"
-  },
-  superdayPill: {
-    backgroundColor: "#16a34a",
-    color: "#ffffff",
-    borderRadius: "4px",
-    padding: "1px 6px",
-    fontSize: "9px",
-    fontWeight: "900"
-  },
-  metricsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "14px",
-    marginBottom: "20px"
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "4px"
-  },
-  cardLabel: {
-    fontSize: "9px",
-    fontWeight: "900",
-    color: "#6b7280",
-    letterSpacing: "0.5px"
-  },
-  badgeGreen: {
-    backgroundColor: "#bbf7d0",
-    color: "#166534",
-    border: "1px solid #000000",
-    borderRadius: "4px",
-    padding: "1px 4px",
-    fontSize: "9px",
-    fontWeight: "900"
-  },
-  bigScoreNumber: {
-    fontSize: "26px",
-    fontWeight: "900",
-    color: "#000000",
-    letterSpacing: "-1px"
-  },
-  miniProgressCircle: {
-    width: "28px",
-    height: "28px",
-    borderRadius: "50%",
-    backgroundColor: "#fdfbf7",
-    border: "2px solid #ff3d9a",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "10px",
-    fontWeight: "900"
-  },
-  progressBarTrack: {
-    height: "5px",
-    backgroundColor: "#e2e8f0",
-    borderRadius: "4px",
-    overflow: "hidden",
-    margin: "4px 0"
-  },
-  progressBarFill: {
-    height: "100%",
-    background: "linear-gradient(90deg, #ff3d9a, #8b5cf6)"
-  },
-  cardFooter: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTop: "1px dashed #e2e8f0",
-    paddingTop: "6px",
-    marginTop: "2px"
-  },
-  subtextMuted: {
-    fontSize: "8px",
-    fontWeight: "800",
-    color: "#9ca3af"
-  },
-  actionLinkBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "10px",
-    fontWeight: "900",
-    color: "#000000",
-    cursor: "pointer",
-    padding: 0,
-    textDecoration: "underline"
-  },
-  quickActionsBar: {
-    backgroundColor: "#000000",
-    borderRadius: "16px",
-    padding: "16px 20px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "24px",
-    boxShadow: "4px 4px 0px #ff3d9a",
-    flexWrap: "wrap",
-    gap: "14px"
-  },
-  quickActionsTitle: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px"
-  },
-  quickButtonsGroup: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap"
-  },
-  quickBtn: {
-    backgroundColor: "#1e1e24",
-    color: "#ffffff",
-    border: "1.5px solid #3f3f46",
-    borderRadius: "8px",
-    padding: "8px 14px",
-    fontSize: "12px",
-    fontWeight: "800",
-    cursor: "pointer"
-  },
-  quickBtnSpecial: {
-    backgroundColor: "#ffea28",
-    color: "#000000",
-    border: "1.5px solid #000000",
-    borderRadius: "8px",
-    padding: "8px 14px",
-    fontSize: "12px",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "2px 2px 0px #ff3d9a"
-  },
-  growthSectionGrid: {
-    display: "grid",
-    gridTemplateColumns: "1.3fr 1fr",
-    gap: "20px",
-    marginBottom: "24px"
-  },
-  growthCurveCard: {
-    backgroundColor: "#ffffff",
-    border: "2.5px solid #000000",
-    borderRadius: "16px",
-    padding: "20px",
-    boxShadow: "5px 5px 0px #000000",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between"
-  },
-  cardTitleRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "10px",
-    flexWrap: "wrap",
-    gap: "8px"
-  },
-  subHeadingTag: {
-    fontSize: "10px",
-    fontWeight: "900",
-    color: "#6b7280",
-    letterSpacing: "0.5px"
-  },
-  blockHeading: {
-    margin: "2px 0 0 0",
-    fontSize: "18px",
-    fontWeight: "900"
-  },
-  growthSvgWrapper: {
-    position: "relative",
-    padding: "10px 0"
-  },
-  curveTooltip: {
-    position: "absolute",
-    top: "10px",
-    right: "20px",
-    backgroundColor: "#000000",
-    color: "#ffea28",
-    padding: "4px 8px",
-    borderRadius: "6px",
-    fontSize: "11px",
-    fontWeight: "900"
-  },
-  growthMilestonesRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: "8px",
-    borderTop: "1px dashed #e2e8f0",
-    paddingTop: "10px",
-    textAlign: "center"
-  },
-  milestoneItem: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px"
-  },
-  recruiterRadarCard: {
-    backgroundColor: "#ffffff",
-    border: "2.5px solid #000000",
-    borderRadius: "16px",
-    padding: "20px",
-    boxShadow: "5px 5px 0px #000000",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between"
-  },
-  livePulsePill: {
-    backgroundColor: "#bbf7d0",
-    border: "1px solid #16a34a",
-    borderRadius: "6px",
-    padding: "2px 8px",
-    fontSize: "10px",
-    fontWeight: "900",
-    color: "#166534"
-  },
-  recruiterList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    margin: "12px 0"
-  },
-  recruiterItem: {
-    display: "flex",
-    gap: "10px",
-    alignItems: "center",
-    backgroundColor: "#fdfbf7",
-    border: "1.5px solid #000000",
-    borderRadius: "10px",
-    padding: "10px 12px",
-    cursor: "pointer",
-    boxShadow: "2px 2px 0px #000000"
-  },
-  recruiterLogo: {
-    width: "34px",
-    height: "34px",
-    borderRadius: "8px",
-    color: "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "900",
-    fontSize: "12px"
-  },
-  openMessagesFullBtn: {
-    backgroundColor: "#ffea28",
-    color: "#000000",
-    border: "2px solid #000000",
-    borderRadius: "10px",
-    padding: "10px",
-    fontSize: "12px",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "2px 2px 0px #ff3d9a",
-    width: "100%"
-  },
-  bottomLayout: {
-    display: "grid",
-    gridTemplateColumns: "1.6fr 1fr",
-    gap: "20px",
-    alignItems: "stretch"
-  },
-  recommendedCard: {
-    backgroundColor: "#ffffff",
-    border: "2.5px solid #000000",
-    borderRadius: "16px",
-    padding: "20px",
-    boxShadow: "5px 5px 0px #000000"
-  },
-  viewAllBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "12px",
-    fontWeight: "900",
-    cursor: "pointer",
-    textDecoration: "underline"
-  },
-  actionItemBox: {
-    backgroundColor: "#fdfbf7",
-    border: "2px solid #000000",
-    borderRadius: "12px",
-    padding: "14px 18px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: "3px 3px 0px #000000"
-  },
-  actionItemNumber: {
-    fontSize: "12px",
-    fontWeight: "900",
-    color: "#6b7280"
-  },
-  highImpactPill: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
-    border: "1px solid #000000",
-    borderRadius: "4px",
-    padding: "1px 5px",
-    fontSize: "9px",
-    fontWeight: "900"
-  },
-  startActionBtn: {
-    backgroundColor: "#ffea28",
-    color: "#000000",
-    border: "2px solid #000000",
-    borderRadius: "8px",
-    padding: "6px 14px",
-    fontSize: "12px",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "2px 2px 0px #000000"
-  },
-  profileWidgetCard: {
-    backgroundColor: "#ffffff",
-    border: "2.5px solid #000000",
-    borderRadius: "16px",
-    padding: "20px",
-    boxShadow: "5px 5px 0px #000000",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between"
-  },
-  avatarBoxWidget: {
-    width: "38px",
-    height: "38px",
-    borderRadius: "10px",
-    backgroundColor: "#000000",
-    color: "#ffffff",
-    border: "2px solid #000000",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "900",
-    fontSize: "16px"
-  },
-  profileStatsSmallBox: {
-    backgroundColor: "#fdfbf7",
-    border: "1.5px solid #000000",
-    borderRadius: "10px",
-    padding: "12px",
-    marginTop: "8px"
-  },
-  completeProfileWideBtn: {
-    backgroundColor: "#ffffff",
-    border: "2px solid #000000",
-    borderRadius: "10px",
-    padding: "10px",
-    fontWeight: "900",
-    fontSize: "12px",
-    cursor: "pointer",
-    boxShadow: "3px 3px 0px #000000",
-    width: "100%",
-    marginTop: "12px"
-  },
-  fastPassItem: {
-    backgroundColor: "#fdfbf7",
-    border: "1.5px solid #000000",
-    borderRadius: "8px",
-    padding: "10px 12px",
-    boxShadow: "2px 2px 0px #000000"
-  }
+const flipStyles = {
+  container: { backgroundColor: "transparent", minHeight: "135px", cursor: "pointer", position: "relative" },
+  inner: { minHeight: "135px", width: "100%", height: "100%", transition: "transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)", transformStyle: "preserve-3d" },
+  face: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", borderRadius: "16px", border: "2.5px solid var(--border-main)", padding: "12px 14px", boxSizing: "border-box", display: "flex", flexDirection: "column" },
+  front: { justifyContent: "space-between", zIndex: 2 },
+  frontTopRow: { display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" },
+  frontCenteredRow: { display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "12px", flex: 1, width: "100%" },
+  back: { backgroundColor: "var(--bg-main)", transform: "rotateY(180deg)", boxShadow: "6px 6px 0px var(--shadow-main)", justifyContent: "space-between", zIndex: 1 },
+  frontCategoryPill: { fontSize: "9px", fontWeight: "900", letterSpacing: "0.8px", padding: "2px 7px", borderRadius: "6px", border: "1px solid var(--border-main)", textTransform: "uppercase" },
+  frontLivePulse: { fontSize: "8px", fontWeight: "900", color: "var(--green-border)" },
+  frontIconCircle: { width: "36px", height: "36px", minWidth: "36px", borderRadius: "10px", border: "2px solid var(--border-main)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", boxShadow: "2px 2px 0px var(--shadow-main)" },
+  frontTitle: { margin: 0, fontSize: "16px", fontWeight: "900", color: "var(--text-main)", letterSpacing: "-0.4px" }
 };
 
 const modalStyles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.65)",
-    backdropFilter: "blur(6px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 9999,
-    padding: "20px"
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    border: "3px solid #000000",
-    borderRadius: "20px",
-    boxShadow: "8px 8px 0px #000000",
-    maxWidth: "520px",
-    width: "100%",
-    padding: "26px",
-    fontFamily: "'Space Grotesk', system-ui, sans-serif"
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    borderBottom: "2px solid #000000",
-    paddingBottom: "12px",
-    marginBottom: "14px"
-  },
-  closeBtn: {
-    background: "none",
-    border: "2px solid #000000",
-    borderRadius: "6px",
-    width: "28px",
-    height: "28px",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "2px 2px 0px #000000"
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    textAlign: "left"
-  },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "3px"
-  },
-  label: {
-    fontSize: "11px",
-    fontWeight: "800",
-    color: "#374151"
-  },
-  input: {
-    padding: "9px 12px",
-    border: "2px solid #000000",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "600",
-    backgroundColor: "#fdfbf7",
-    outline: "none"
-  },
-  select: {
-    padding: "9px 12px",
-    border: "2px solid #000000",
-    borderRadius: "8px",
-    fontSize: "12px",
-    fontWeight: "700",
-    backgroundColor: "#ffffff",
-    cursor: "pointer"
-  },
-  cancelBtn: {
-    backgroundColor: "#ffffff",
-    border: "2px solid #000000",
-    borderRadius: "8px",
-    padding: "10px 16px",
-    fontWeight: "800",
-    fontSize: "12px",
-    cursor: "pointer",
-    boxShadow: "2px 2px 0px #000000"
-  },
-  saveBtn: {
-    flex: 1,
-    backgroundColor: "#000000",
-    color: "#ffffff",
-    border: "2px solid #000000",
-    borderRadius: "8px",
-    padding: "10px 16px",
-    fontWeight: "900",
-    fontSize: "12px",
-    cursor: "pointer",
-    boxShadow: "3px 3px 0px #ff3d9a"
-  }
+  overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0, 0, 0, 0.65)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px" },
+  card: { backgroundColor: "var(--bg-main)", color: "var(--text-main)", border: "3px solid var(--border-main)", borderRadius: "20px", boxShadow: "8px 8px 0px var(--shadow-main)", maxWidth: "520px", width: "100%", padding: "26px", fontFamily: "'Space Grotesk', system-ui, sans-serif" },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid var(--border-main)", paddingBottom: "12px", marginBottom: "14px" },
+  closeBtn: { background: "none", color: "var(--text-main)", border: "2px solid var(--border-main)", borderRadius: "6px", width: "28px", height: "28px", fontWeight: "900", cursor: "pointer", boxShadow: "2px 2px 0px var(--shadow-main)" },
+  form: { display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" },
+  inputGroup: { display: "flex", flexDirection: "column", gap: "4px" },
+  label: { fontSize: "11px", fontWeight: "900", color: "var(--text-muted)" },
+  input: { padding: "9px 12px", color: "var(--invert-text)", border: "2px solid var(--border-main)", borderRadius: "8px", fontSize: "13px", fontWeight: "600", backgroundColor: "var(--invert-bg)", outline: "none" },
+  select: { padding: "9px 12px", color: "var(--invert-text)", border: "2px solid var(--border-main)", borderRadius: "8px", fontSize: "13px", fontWeight: "700", backgroundColor: "var(--invert-bg)", cursor: "pointer" },
+  cancelBtn: { backgroundColor: "var(--bg-main)", color: "var(--text-main)", border: "2px solid var(--border-main)", borderRadius: "8px", padding: "10px 16px", fontWeight: "800", fontSize: "12px", cursor: "pointer", boxShadow: "2px 2px 0px var(--shadow-main)" },
+  saveBtn: { flex: 1, backgroundColor: "var(--invert-bg)", color: "var(--invert-text)", border: "2px solid var(--border-main)", borderRadius: "8px", padding: "10px 16px", fontWeight: "900", fontSize: "12px", cursor: "pointer", boxShadow: "3px 3px 0px #ff3d9a" }
 };
